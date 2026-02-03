@@ -627,6 +627,8 @@ const handleEndTreatment = async (log) => {
     fetchLogs()
     // 设置最后日志ID并显示反馈模态框
     lastLogId.value = log.id
+    // 初始化问卷答案
+    initSurveyAnswers()
     showScaleModal.value = true
     console.log('✅ 结束治疗会话成功，显示反馈模态框')
   } catch (error) {
@@ -990,26 +992,38 @@ const handleRestart = () => {
   }
 }
 
+const updateSurveyProgress = () => {
+  const answeredCount = Object.keys(surveyAnswers.value).filter(key => surveyAnswers.value[key] !== '' && surveyAnswers.value[key] !== undefined).length
+  surveyProgress.value = Math.round((answeredCount / mergedQuestions.value.length) * 100)
+}
+
+const initSurveyAnswers = () => {
+  // 无论是否有有效的治疗记录，都初始化问卷答案
+  surveyAnswers.value = {}
+  // 为合并后的题目初始化默认答案
+  if (mergedQuestions.value.length > 0) {
+    mergedQuestions.value.forEach(q => {
+      // Ensure we use uniqueId
+      const key = q.uniqueId
+      if (q.type === 'range') {
+        surveyAnswers.value[key] = q.min
+      } else if (q.type === 'select') {
+        surveyAnswers.value[key] = q.options && q.options.length > 0 ? q.options[0] : ''
+      } else {
+        surveyAnswers.value[key] = ''
+      }
+    })
+  }
+}
+
 const handleStop = async (completed = false) => {
   isRunning.value = false
   isPaused.value = false
   clearInterval(interval)
   const durationMin = Math.ceil(totalElapsedTime.value / 60)
   
-  // 无论是否有有效的治疗记录，都初始化问卷答案
-  surveyAnswers.value = {}
-  // 为合并后的题目初始化默认答案
-  if (mergedQuestions.value.length > 0) {
-    mergedQuestions.value.forEach(q => {
-      if (q.type === 'range') {
-        surveyAnswers.value[q.uniqueId] = q.min
-      } else if (q.type === 'select') {
-        surveyAnswers.value[q.uniqueId] = q.options && q.options.length > 0 ? q.options[0] : ''
-      } else {
-        surveyAnswers.value[q.uniqueId] = ''
-      }
-    })
-  }
+  // 初始化问卷答案
+  initSurveyAnswers()
   
   // 调用API结束治疗会话（如果有有效的治疗记录）
   if (durationMin > 0 && treatmentId) {
@@ -2133,11 +2147,7 @@ onUnmounted(() => {
                   :min="q.min"
                   :max="q.max"
                   v-model.number="surveyAnswers[q.uniqueId]"
-                  @input="() => {
-                    // 更新进度
-                    const answeredCount = Object.keys(surveyAnswers).filter(key => surveyAnswers[key] !== '' && surveyAnswers[key] !== undefined).length;
-                    surveyProgress.value = Math.round((answeredCount / mergedQuestions.length) * 100);
-                  }"
+                  @input="updateSurveyProgress"
                   class="flex-1 h-2 bg-gray-200 rounded-lg accent-blue-600"
                 />
                 <span class="text-lg font-bold text-blue-600 w-8 text-center">{{ surveyAnswers[q.uniqueId] || q.min }}</span>
@@ -2149,9 +2159,7 @@ onUnmounted(() => {
                   :key="opt"
                   @click="() => {
                     surveyAnswers[q.uniqueId] = opt;
-                    // 更新进度
-                    const answeredCount = Object.keys(surveyAnswers).filter(key => surveyAnswers[key] !== '' && surveyAnswers[key] !== undefined).length;
-                    surveyProgress.value = Math.round((answeredCount / mergedQuestions.length) * 100);
+                    updateSurveyProgress();
                   }"
                   :class="[
                     'py-1.5 sm:py-2 px-2 sm:px-3 rounded-lg border text-xs sm:text-sm transition-all',
@@ -2164,11 +2172,7 @@ onUnmounted(() => {
               <textarea
                 v-if="q.type === 'text'"
                 v-model="surveyAnswers[q.uniqueId]"
-                @input="() => {
-                  // 更新进度
-                  const answeredCount = Object.keys(surveyAnswers).filter(key => surveyAnswers[key] !== '' && surveyAnswers[key] !== undefined).length;
-                  surveyProgress.value = Math.round((answeredCount / mergedQuestions.length) * 100);
-                }"
+                @input="updateSurveyProgress"
                 class="w-full border border-gray-300 rounded-lg p-2 sm:p-3 text-sm focus:ring-2 ring-blue-500 outline-none"
                 rows="2"
               />
