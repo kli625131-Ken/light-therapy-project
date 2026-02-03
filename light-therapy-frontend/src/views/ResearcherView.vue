@@ -10,9 +10,9 @@ import { useUserStore } from '../stores/useUserStore'
 import { useDataStore } from '../stores/useDataStore'
 import { listDevices, createSubject, updateUser, listUsers, createGroup, listGroups, updateScheme, deleteScheme, listSchemes, allSchemes, createSchemeWithStages, updateSchemeWithStages, listSubjects, updateSubject, deleteSubject, listTreatments } from '../api'
 import { endTreatment, manualStartTreatment, researcherExecuteScenario } from '../api/modules/treatment'
-import { listTemplates, getTemplate, createTemplate, updateTemplate,deleteTemplate } from '../api/modules/survey'
+import { listTemplates, getTemplate, createTemplate, updateTemplate,deleteTemplate, getUserSurveyResults, getSurveyResultBySession } from '../api/modules/survey'
 // xlsx-style 库已安装
-import { getUserSurveyResults } from '../api/modules/survey'
+
 import { downloadMergedCSV, downloadTreatmentRecordsXLSX } from '../utils/csvExport'
 import { exportDatabase } from '../utils/dbExport'
 import Button from '../components/ui/Button.vue'
@@ -27,7 +27,8 @@ const activeTab = ref('users')
 const isUserModalOpen = ref(false)
 const isSchemeModalOpen = ref(false)
 const isGroupModalOpen = ref(false)
-const viewLogsUserId = ref(null)
+const viewLogsUserId = ref(null) // Keep for backward compatibility or remove if fully replaced
+const viewLogDetail = ref(null) // New ref for single log details
 const isEditingUser = ref(false)
 const editingUserId = ref(null)
 const isEditingScheme = ref(false)
@@ -508,10 +509,7 @@ const currentUserLogs = computed(() => {
   return allLogs.filter(l => l.user_id === viewLogsUserId.value).sort((a, b) => (b.id ?? 0) - (a.id ?? 0))
 })
 
-const viewingUser = computed(() => {
-  if (!viewLogsUserId.value) return null
-  return users.value.find(u => String(u.subjectCode) === String(viewLogsUserId.value) || String(u.id) === String(viewLogsUserId.value))
-})
+const viewingUser = ref(null)
 
 // Scales Management
 const activeScaleId = ref(null)
@@ -616,6 +614,63 @@ const handleAddScale = () => {
   
   console.log('✅ 新建量表已添加到本地:', newScale)
 }
+
+// 问卷反馈相关逻辑
+const currentLogSurveyResult = ref(null)
+
+const getQuestionLabel = (uniqueId) => {
+  // Try to find in editingSurvey if active, or just return ID
+  // In ResearcherView, we might need a more robust way to map IDs to labels globally 
+  // or fetch the template for recent logs.
+  // For now, return uniqueId or try to find it in loaded scales.
+  if (!dataStore.scales) return uniqueId
+  
+  // Need to search across all templates or the specific one for this log
+  // For simplicity MVP:
+  return uniqueId
+}
+
+watch(() => viewLogDetail.value, async (newLog) => {
+  if (newLog) {
+    viewingUser.value = users.value.find(u => String(u.subjectCode) === String(newLog.user_id) || String(u.id) === String(newLog.user_id))
+    currentLogSurveyResult.value = null
+    try {
+      const res = await getSurveyResultBySession(newLog.id)
+      if (res) {
+        let mergedAnswers = {}
+        // Handle array response (multiple surveys)
+        if (Array.isArray(res)) {
+            res.forEach(item => {
+                if (item && item.rawJson) {
+                    try {
+                        const answers = typeof item.rawJson === 'string' ? JSON.parse(item.rawJson) : item.rawJson
+                        mergedAnswers = { ...mergedAnswers, ...answers }
+                    } catch (parseErr) {
+                        console.error('Error parsing survey answers JSON:', parseErr)
+                    }
+                }
+            })
+        } 
+        // Handle single object response (backward compatibility)
+        else if (res.rawJson) {
+            try {
+                const answers = typeof res.rawJson === 'string' ? JSON.parse(res.rawJson) : res.rawJson
+                mergedAnswers = answers
+            } catch (parseErr) {
+                console.error('Error parsing survey answers JSON:', parseErr)
+            }
+        }
+        currentLogSurveyResult.value = Object.keys(mergedAnswers).length > 0 ? mergedAnswers : null
+      }
+    } catch (e) {
+      console.error('Failed to fetch survey details for log:', newLog.id, e)
+    }
+  } else {
+    currentLogSurveyResult.value = null
+    viewingUser.value = null
+  }
+})
+
 
 const handleRemoveScale = async (id) => {
   if (scales.value.length <= 1) return alert('至少保留一个量表')
@@ -2119,7 +2174,7 @@ const closeSchemeModal = () => {
                       </span>
                     </td>
                     <td class="p-4 flex items-center gap-2">
-                      <button @click="viewLogsUserId = log.user_id" class="text-gray-500 hover:text-indigo-600" title="查看详情">
+                      <button @click="viewLogDetail = log" class="text-gray-500 hover:text-indigo-600" title="查看详情">
                         <Eye :size="16" />
                       </button>
                       <!-- 只对未结束的会话显示结束按钮 -->
@@ -2532,15 +2587,15 @@ const closeSchemeModal = () => {
       </div>
     </Modal>
 
-    <Modal :is-open="!!viewLogsUserId" @close="viewLogsUserId = null" :title="`记录详情: ${viewLogsUserId}`" size="lg">
-      <div class="space-y-6">
+    <Modal :is-open="!!viewLogDetail" @close="viewLogDetail = null" :title="`记录详情: ${viewLogDetail?.user_id}`" size="lg">
+      <div v-if="viewLogDetail" class="space-y-6">
         <div class="border rounded-xl p-4 bg-blue-50">
           <h3 class="font-bold text-gray-800 mb-3 flex items-center gap-2">
             <Users :size="16" /> 受试者档案
           </h3>
             <div class="grid md:grid-cols-2 gap-4 text-sm">
               <div class="space-y-2">
-                <p class="flex justify-between"><span class="text-gray-500">受试者ID:</span><span class="font-medium text-gray-900">{{ viewingUser?.subjectCode || viewingUser?.id || viewLogsUserId }}</span></p>
+                <p class="flex justify-between"><span class="text-gray-500">受试者ID:</span><span class="font-medium text-gray-900">{{ viewingUser?.subjectCode || viewingUser?.id || viewLogDetail.user_id }}</span></p>
                 <p class="flex justify-between"><span class="text-gray-500">性别:</span><span class="font-medium text-gray-900">{{ viewingUser?.gender || '未填写' }}</span></p>
                 <p class="flex justify-between"><span class="text-gray-500">年龄:</span><span class="font-medium text-gray-900">{{ viewingUser?.age || '未填写' }}</span></p>
                 <p class="flex justify-between"><span class="text-gray-500">分组:</span><span class="font-medium text-gray-900">{{ viewingUser?.groupName || viewingUser?.group_name || '未填写' }}</span></p>
@@ -2554,29 +2609,26 @@ const closeSchemeModal = () => {
             </div>
           </div>
         
-        <p v-if="currentUserLogs.length === 0" class="text-center text-gray-500 py-10">该用户暂无诊疗记录。</p>
-        
-        <div v-else class="space-y-6">
-          <div v-for="log in currentUserLogs" :key="log.id" class="border rounded-xl p-4 bg-gray-50">
+        <div class="border rounded-xl p-4 bg-gray-50">
             <div class="flex justify-between items-center mb-3 pb-2 border-b border-gray-200">
               <div class="flex gap-4 items-center">
-                <span class="font-bold text-indigo-700">{{ log.date }}</span>
-                <span class="text-gray-500 text-sm">{{ log.start_time }} - {{ log.end_time }}</span>
+                <span class="font-bold text-indigo-700">{{ viewLogDetail.date }}</span>
+                <span class="text-gray-500 text-sm">{{ viewLogDetail.start_time }}</span>
               </div>
-              <span :class="['px-2 py-1 rounded text-xs', log.status === '自动完成' || log.status === '正常结束治疗' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700']">{{ log.status }}</span>
+              <span :class="['px-2 py-1 rounded text-xs', viewLogDetail.status === '自动完成' || viewLogDetail.status === '正常结束治疗' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700']">{{ viewLogDetail.status }}</span>
             </div>
             <div class="grid md:grid-cols-2 gap-4">
               <div class="text-sm">
-                <p class="text-gray-500">治疗方案: <span class="text-gray-900 font-medium">{{ log.scheme_name }}</span></p>
-                <p class="text-gray-500">实际时长: <span class="text-gray-900 font-medium">{{ log.duration_actual }} 分钟</span></p>
+                <p class="text-gray-500">治疗方案: <span class="text-gray-900 font-medium">{{ viewLogDetail.scheme_name }}</span></p>
+                <p class="text-gray-500">实际时长: <span class="text-gray-900 font-medium">{{ viewLogDetail.duration_actual }} (分钟)</span></p>
               </div>
               <div class="text-sm bg-white p-3 rounded-lg border border-gray-100">
                 <p class="font-bold text-gray-700 mb-2 flex items-center gap-2">
                   <MessageSquare :size="14" /> 问卷反馈
                 </p>
-                <ul v-if="scales.find(s => s.treatment_log_id === log.id)?.answers" class="space-y-1">
-                  <li v-for="(val, key) in (scales.find(s => s.treatment_log_id === log.id)?.answers || {})" :key="key" class="flex justify-between">
-                    <span class="text-gray-500">{{ key }}:</span>
+                <ul v-if="currentLogSurveyResult" class="space-y-1">
+                  <li v-for="(val, key) in currentLogSurveyResult" :key="key" class="flex justify-between">
+                    <span class="text-gray-500">{{ getQuestionLabel(key) || key }}:</span>
                     <span class="font-medium text-gray-800">{{ val }}</span>
                   </li>
                 </ul>
@@ -2584,7 +2636,6 @@ const closeSchemeModal = () => {
               </div>
             </div>
           </div>
-        </div>
       </div>
     </Modal>
   </div>

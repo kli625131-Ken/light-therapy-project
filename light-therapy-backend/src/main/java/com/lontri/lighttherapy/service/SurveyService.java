@@ -32,11 +32,11 @@ public class SurveyService {
     private final SurveyTemplateRepository templateRepo;
     private final SurveyQuestionRepository questionRepo;
 
-    public SurveyService(SurveyResultRepository surveyResultRepo, 
-                         UserRepository userRepo, 
-                         SubjectRepository subjectRepo, 
-                         SurveyTemplateRepository templateRepo, 
-                         SurveyQuestionRepository questionRepo) {
+    public SurveyService(SurveyResultRepository surveyResultRepo,
+            UserRepository userRepo,
+            SubjectRepository subjectRepo,
+            SurveyTemplateRepository templateRepo,
+            SurveyQuestionRepository questionRepo) {
         this.surveyResultRepo = surveyResultRepo;
         this.userRepo = userRepo;
         this.subjectRepo = subjectRepo;
@@ -85,8 +85,10 @@ public class SurveyService {
     }
 
     public Page<SurveyTemplate> listTemplates(Optional<String> code, Optional<String> status, Pageable pageable) {
-        if (code.isPresent()) return templateRepo.findByCode(code.get(), pageable);
-        if (status.isPresent()) return templateRepo.findByStatus(status.get(), pageable);
+        if (code.isPresent())
+            return templateRepo.findByCode(code.get(), pageable);
+        if (status.isPresent())
+            return templateRepo.findByStatus(status.get(), pageable);
         return templateRepo.findAll(pageable);
     }
 
@@ -100,7 +102,8 @@ public class SurveyService {
         SurveyTemplate t = getTemplate(id);
         t.setName(req.name);
         t.setDescription(req.description);
-        if (req.status != null) t.setStatus(req.status);
+        if (req.status != null)
+            t.setStatus(req.status);
         t.setUpdatedAt(LocalDateTime.now());
         return templateRepo.save(t);
     }
@@ -191,6 +194,12 @@ public class SurveyService {
                 .map(subject -> surveyResultRepo.findBySubjectIdOrderByFilledAtDesc(subject.getId()))
                 .orElseThrow(() -> new BizException(40411, "subject not found", HttpStatus.NOT_FOUND))
                 .stream()
+                .map(this::mapToSurveyResultDto)
+                .collect(Collectors.toList());
+    }
+
+    public List<SurveyDtos.SurveyResult> getSurveyResultBySessionId(Long sessionId) {
+        return surveyResultRepo.findBySessionId(sessionId).stream()
                 .map(this::mapToSurveyResultDto)
                 .collect(Collectors.toList());
     }

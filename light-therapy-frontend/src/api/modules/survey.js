@@ -53,3 +53,8 @@ export const getMySurveyResults = () => {
 export const getUserSurveyResults = (userId) => {
   return http.get(`/api/surveys/results/user/${userId}`)
 }
+
+// 获取指定 sessionId 的问卷反馈
+export const getSurveyResultBySession = (sessionId) => {
+  return http.get(`/api/surveys/session/${sessionId}`)
+}

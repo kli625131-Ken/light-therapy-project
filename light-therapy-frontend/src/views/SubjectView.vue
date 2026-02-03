@@ -5,9 +5,10 @@ import { Sun, Clock, Settings, LogOut, Play, Pause, Thermometer, List, CheckCirc
 import { useUserStore } from '../stores/useUserStore'
 import { useDataStore } from '../stores/useDataStore'
 import { listSchemesMe, listSchemeStagesMe, listTreatments } from '../api'
-import { createTreatment, endTreatment, createAndStartTreatment, manualStartTreatment, getTreatmentbySubject, manualControlTreatment, pauseTreatment, resumeTreatment } from '../api/modules/treatment' // ken260122-恢复了manualControlTreatment导入，用于手动激活功能
-import { getTemplate, submitSurvey, getMySurveyTemplates, getMySurveyResults } from '../api/modules/survey'
+import { createTreatment, endTreatment, createAndStartTreatment, manualStartTreatment, getTreatmentbySubject, manualControlTreatment, pauseTreatment, resumeTreatment } from '../api/modules/treatment'
+import { getTemplate, submitSurvey, getMySurveyTemplates, getMySurveyResults, getSurveyResultBySession } from '../api/modules/survey'
 import { listDevices } from '../api/modules/device'
+import { getToken } from '../utils/token'
 import { listGroups } from '../api/modules/group'
 import { downloadMergedCSV } from '../utils/csvExport'
 import Button from '../components/ui/Button.vue'
@@ -504,6 +505,52 @@ const treatmentRecords = ref([])
 const totalRecords = ref(0)
 const totalPages = ref(0) // 直接使用后端返回的分页总数
 const viewDetailsLog = ref(null) // For modal
+const currentLogSurveyResult = ref(null)
+
+const getQuestionLabel = (uniqueId) => {
+  if (!mergedQuestions.value) return uniqueId
+  const q = mergedQuestions.value.find(q => q.uniqueId === uniqueId)
+  return q ? q.label : uniqueId
+}
+
+watch(() => viewDetailsLog.value, async (newLog) => {
+  if (newLog) {
+    currentLogSurveyResult.value = null
+    try {
+      const res = await getSurveyResultBySession(newLog.id)
+      if (res) {
+        let mergedAnswers = {}
+        // Handle array response (multiple surveys)
+        if (Array.isArray(res)) {
+            res.forEach(item => {
+                if (item && item.rawJson) {
+                    try {
+                        const answers = typeof item.rawJson === 'string' ? JSON.parse(item.rawJson) : item.rawJson
+                        mergedAnswers = { ...mergedAnswers, ...answers }
+                    } catch (parseErr) {
+                        console.error('Error parsing survey answers JSON:', parseErr)
+                    }
+                }
+            })
+        } 
+        // Handle single object response (backward compatibility)
+        else if (res.rawJson) {
+            try {
+                const answers = typeof res.rawJson === 'string' ? JSON.parse(res.rawJson) : res.rawJson
+                mergedAnswers = answers
+            } catch (parseErr) {
+                console.error('Error parsing survey answers JSON:', parseErr)
+            }
+        }
+        currentLogSurveyResult.value = Object.keys(mergedAnswers).length > 0 ? mergedAnswers : null
+      }
+    } catch (e) {
+      console.error('Failed to fetch survey details for log:', newLog.id, e)
+    }
+  } else {
+    currentLogSurveyResult.value = null
+  }
+})
 const scales = computed(() => dataStore?.scales || []) // ken260122-修改内容：添加可选链操作符，确保dataStore为undefined时不崩溃
 
 const mapSessionToLog = (s) => {
@@ -536,27 +583,41 @@ const mapSessionToLog = (s) => {
 }
 
 const fetchLogs = async () => {
+  // Use getToken from utils to check token existence consistently with http interceptor
+  const token = getToken(userStore.role)
+  
   // 确保用户已登录且有token
-  if (!currentUser.value?.id || !currentUser.value?.subject?.id || !userStore.token) return
+  console.log('fetchLogs triggered. User:', currentUser.value?.id, 'Subject:', currentUser.value?.subject?.id, 'Token:', !!token)
+  
+  if (!currentUser.value?.id || !currentUser.value?.subject?.id || !token) {
+    console.warn('fetchLogs aborted: missing user/subject/token')
+    return
+  }
 
   try {
     const start = dateRange.value.start ? new Date(dateRange.value.start).toISOString().split('T')[0] : null
     const end = dateRange.value.end ? new Date(dateRange.value.end).toISOString().split('T')[0] : null
     
     // Always filter by currentUser.id
+    console.log('Fetching logs for subject:', currentUser.value.subject.id, 'Page:', currentPage.value - 1, 'Size:', pageSize.value)
     const res = await getTreatmentbySubject(currentUser.value.subject.id, null, start, end, currentPage.value - 1, pageSize.value)
+    console.log('fetchLogs response:', res)
     
     if (res && res.content) {
       treatmentRecords.value = res.content.map(mapSessionToLog)
       totalRecords.value = res.totalElements
       // 直接使用后端返回的totalPages，而不是前端计算
       totalPages.value = res.totalPages
+      console.log('Logs loaded:', treatmentRecords.value.length)
     } else {
+      console.warn('Response format unexpected or empty:', res)
       treatmentRecords.value = []
       totalRecords.value = 0
       totalPages.value = 0
     }
     
+    // Ken: 暂时移除问卷反馈历史获取，避免404错误干扰
+    /* 
     // 获取问卷反馈数据
     try {
       const surveyResults = await getMySurveyResults()
@@ -570,6 +631,7 @@ const fetchLogs = async () => {
     } catch (surveyError) {
       console.error('获取问卷反馈失败:', surveyError)
     }
+    */
   } catch (e) {
     console.error('Fetch logs failed', e)
     treatmentRecords.value = []
@@ -593,9 +655,10 @@ watch(() => [dateRange.value.start, dateRange.value.end], () => {
   fetchLogs()
 })
 // Initial Load and User Change
-watch(() => [currentUser.value?.subject?.id, userStore.token], ([newSubjectId, newToken]) => {
-  if (newSubjectId && newToken) fetchLogs()
-})
+watch(() => [currentUser.value?.subject?.id, userStore.role], ([newSubjectId, newRole]) => {
+  const token = getToken(newRole)
+  if (newSubjectId && token) fetchLogs()
+}, { immediate: true })
 
 const handleExportMyLogs = async () => {
   if (!currentUser.value?.id || !currentUser.value?.subject?.id) return
@@ -2253,9 +2316,9 @@ onUnmounted(() => {
                 <p class="font-bold text-gray-700 mb-2 flex items-center gap-2">
                   <MessageSquare :size="14" /> 问卷反馈
                 </p>
-                <ul v-if="scales.find(s => s.treatment_log_id === viewDetailsLog.id)?.answers" class="space-y-1">
-                  <li v-for="(val, key) in (scales.find(s => s.treatment_log_id === viewDetailsLog.id)?.answers || {})" :key="key" class="flex justify-between">
-                    <span class="text-gray-500">{{ key }}:</span>
+                <ul v-if="currentLogSurveyResult" class="space-y-1">
+                  <li v-for="(val, key) in currentLogSurveyResult" :key="key" class="flex justify-between">
+                    <span class="text-gray-500">{{ getQuestionLabel(key) || key }}:</span>
                     <span class="font-medium text-gray-800">{{ val }}</span>
                   </li>
                 </ul>

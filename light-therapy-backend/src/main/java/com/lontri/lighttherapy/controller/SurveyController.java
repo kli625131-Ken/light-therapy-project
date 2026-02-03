@@ -16,7 +16,7 @@ import java.security.Principal;
 import java.util.List;
 
 @RestController
-@RequestMapping({"/api/surveys", "/api/v1/surveys"})
+@RequestMapping({ "/api/surveys", "/api/v1/surveys" })
 public class SurveyController {
 
     private final SurveyTemplateService surveyTemplateService;
@@ -24,8 +24,8 @@ public class SurveyController {
     private final SurveyService surveyService;
 
     public SurveyController(SurveyTemplateService surveyTemplateService,
-                            SurveyResultService surveyResultService,
-                            SurveyService surveyService) {
+            SurveyResultService surveyResultService,
+            SurveyService surveyService) {
         this.surveyTemplateService = surveyTemplateService;
         this.surveyResultService = surveyResultService;
         this.surveyService = surveyService;
@@ -63,10 +63,10 @@ public class SurveyController {
     /** 更新：一次提交模板 + 全量问题（后端先删旧 questions 再重建） */
     @PutMapping("/templates/{id}")
     public ApiResponse<SurveyTemplate> updateTemplate(@PathVariable Long id,
-                                                      @RequestBody @Valid SurveyDtos.UpdateTemplateReq req) {
+            @RequestBody @Valid SurveyDtos.UpdateTemplateReq req) {
         return ApiResponse.ok(surveyTemplateService.updateTemplate(id, req));
     }
-    
+
     /** 删除模板：同时删除关联的问题 */
     @DeleteMapping("/templates/{id}")
     public ApiResponse<Void> deleteTemplate(@PathVariable Long id) {
@@ -81,20 +81,26 @@ public class SurveyController {
     /** 受试者提交问卷：PENDING -> SUBMITTED */
     @PostMapping("/results/{id}/submit")
     public ApiResponse<SurveyResult> submit(@PathVariable Long id,
-                                            @RequestBody @Valid SubmitSurveyReq req) {
+            @RequestBody @Valid SubmitSurveyReq req) {
         return ApiResponse.ok(surveyResultService.submit(id, req.rawJson, req.score));
     }
-    
+
     /** 获取当前用户的问卷反馈历史 */
     @GetMapping("/my")
     public ApiResponse<List<SurveyDtos.SurveyResult>> getMySurveyResults(Principal principal) {
         return ApiResponse.ok(surveyService.getMySurveyResults(principal));
     }
-    
+
     /** 获取指定用户的问卷反馈历史（仅管理员或研究人员可访问） */
     @PreAuthorize("hasRole('ADMIN') or hasRole('RESEARCHER')")
     @GetMapping("/results/user/{userId}")
     public ApiResponse<List<SurveyDtos.SurveyResult>> getUserSurveyResults(@PathVariable Long userId) {
         return ApiResponse.ok(surveyService.getUserSurveyResults(userId));
+    }
+
+    /** 根据 sessionId 获取问卷反馈 */
+    @GetMapping("/session/{sessionId}")
+    public ApiResponse<List<SurveyDtos.SurveyResult>> getSurveyResultBySession(@PathVariable Long sessionId) {
+        return ApiResponse.ok(surveyService.getSurveyResultBySessionId(sessionId));
     }
 }

@@ -26,11 +26,15 @@ public class SurveyResultService {
 
         // 先尝试通过id查找SurveyResult
         SurveyResult r = surveyResultRepo.findById(id)
-            .orElseGet(() -> {
-                // 如果找不到，尝试通过sessionId查找
-                return surveyResultRepo.findBySessionId(id)
-                    .orElseThrow(() -> new BizException(40470, "survey result not found", HttpStatus.NOT_FOUND));
-            });
+                .orElseGet(() -> {
+                    // 如果找不到，尝试通过sessionId查找
+                    java.util.List<SurveyResult> results = surveyResultRepo.findBySessionId(id);
+                    if (results.isEmpty()) {
+                        throw new BizException(40470, "survey result not found", HttpStatus.NOT_FOUND);
+                    }
+                    // Return the first element if found
+                    return results.get(0);
+                });
 
         if (!"PENDING".equals(r.getStatus())) {
             throw new BizException(40970, "survey already submitted", HttpStatus.CONFLICT);
