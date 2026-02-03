@@ -51,6 +51,14 @@ public class TreatmentController {
         treatmentService.manualControl(req);
         return ApiResponse.ok(null);
     }
+    
+    // 研究者执行场景
+    @PostMapping("/researcher/execute")
+    @PreAuthorize("hasAnyRole('ADMIN', 'RESEARCHER')")
+    public ApiResponse<Void> researcherExecute(@RequestBody @Valid TreatmentDtos.ResearcherExecuteReq req) {
+        treatmentService.researcherExecute(req);
+        return ApiResponse.ok(null);
+    }
 
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'SUBJECT')")

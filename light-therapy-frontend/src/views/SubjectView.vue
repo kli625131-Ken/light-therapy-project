@@ -536,7 +536,8 @@ const mapSessionToLog = (s) => {
 }
 
 const fetchLogs = async () => {
-  if (!currentUser.value?.id) return
+  // 确保用户已登录且有token
+  if (!currentUser.value?.id || !currentUser.value?.subject?.id || !userStore.token) return
 
   try {
     const start = dateRange.value.start ? new Date(dateRange.value.start).toISOString().split('T')[0] : null
@@ -592,12 +593,12 @@ watch(() => [dateRange.value.start, dateRange.value.end], () => {
   fetchLogs()
 })
 // Initial Load and User Change
-watch(() => currentUser.value?.id, (newId) => {
-  if (newId) fetchLogs()
-}, { immediate: true })
+watch(() => [currentUser.value?.subject?.id, userStore.token], ([newSubjectId, newToken]) => {
+  if (newSubjectId && newToken) fetchLogs()
+})
 
 const handleExportMyLogs = async () => {
-  if (!currentUser.value?.id) return
+  if (!currentUser.value?.id || !currentUser.value?.subject?.id) return
   try {
      const start = dateRange.value.start ? new Date(dateRange.value.start).toISOString().split('T')[0] : null
      const end = dateRange.value.end ? new Date(dateRange.value.end).toISOString().split('T')[0] : null
@@ -924,7 +925,9 @@ const handleStartManual = async () => {
         deviceSn: device.deviceSn || device.sn || device.id.toString(), // 兼容不同的设备序列号字段名
         dim: dimValue, // 亮度
         cctK: config.temp, // 色温
-        skyDim: skyDimValue // 天空亮度
+        skyDim: skyDimValue, // 天空亮度
+        skyCctK: config.temp, // 天空色温（后端必填）
+        sumDim: device.deviceType === '485' || device.deviceType === 'MCB' ? config.sunBrightness : null // 总亮度
       }
       
       deviceControls.push(control)
@@ -995,6 +998,18 @@ const handleStop = async (completed = false) => {
   
   // 无论是否有有效的治疗记录，都初始化问卷答案
   surveyAnswers.value = {}
+  // 为合并后的题目初始化默认答案
+  if (mergedQuestions.value.length > 0) {
+    mergedQuestions.value.forEach(q => {
+      if (q.type === 'range') {
+        surveyAnswers.value[q.uniqueId] = q.min
+      } else if (q.type === 'select') {
+        surveyAnswers.value[q.uniqueId] = q.options && q.options.length > 0 ? q.options[0] : ''
+      } else {
+        surveyAnswers.value[q.uniqueId] = ''
+      }
+    })
+  }
   
   // 调用API结束治疗会话（如果有有效的治疗记录）
   if (durationMin > 0 && treatmentId) {
@@ -1043,17 +1058,19 @@ const selectSurveyTemplate = async (template) => {
     // 初始化问卷答案
     surveyAnswers.value = {}
     if (selectedSurveyTemplate.value && selectedSurveyTemplate.value.questions) {
-      selectedSurveyTemplate.value.questions.forEach(q => {
+      selectedSurveyTemplate.value.questions.forEach((q, index) => {
+        // 使用uniqueId作为key，如果没有则生成一个
+        const uniqueId = `${template.id}_${q.id || index}`
         if (q.type === 'range') {
-          surveyAnswers.value[q.label] = Math.ceil((q.max + q.min) / 2)
+          surveyAnswers.value[uniqueId] = Math.ceil((q.max + q.min) / 2)
         } else if (q.type === 'select') {
           if (q.label === '昨晚睡眠质量') {
-            surveyAnswers.value[q.label] = '良好'
+            surveyAnswers.value[uniqueId] = '良好'
           } else {
-            surveyAnswers.value[q.label] = q.options && q.options.length > 0 ? q.options[0] : ''
+            surveyAnswers.value[uniqueId] = q.options && q.options.length > 0 ? q.options[0] : ''
           }
         } else {
-          surveyAnswers.value[q.label] = ''
+          surveyAnswers.value[uniqueId] = ''
         }
       })
     }
@@ -2115,9 +2132,8 @@ onUnmounted(() => {
                   type="range"
                   :min="q.min"
                   :max="q.max"
-                  :value="surveyAnswers[q.uniqueId] || q.min"
-                  @input="e => {
-                    surveyAnswers[q.uniqueId] = e.target.value;
+                  v-model.number="surveyAnswers[q.uniqueId]"
+                  @input="() => {
                     // 更新进度
                     const answeredCount = Object.keys(surveyAnswers).filter(key => surveyAnswers[key] !== '' && surveyAnswers[key] !== undefined).length;
                     surveyProgress.value = Math.round((answeredCount / mergedQuestions.length) * 100);

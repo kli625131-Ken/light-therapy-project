@@ -9,7 +9,7 @@ import {
 import { useUserStore } from '../stores/useUserStore'
 import { useDataStore } from '../stores/useDataStore'
 import { listDevices, createSubject, updateUser, listUsers, createGroup, listGroups, updateScheme, deleteScheme, listSchemes, allSchemes, createSchemeWithStages, updateSchemeWithStages, listSubjects, updateSubject, deleteSubject, listTreatments } from '../api'
-import { endTreatment } from '../api/modules/treatment'
+import { endTreatment, manualStartTreatment, researcherExecuteScenario } from '../api/modules/treatment'
 import { listTemplates, getTemplate, createTemplate, updateTemplate,deleteTemplate } from '../api/modules/survey'
 // xlsx-style 库已安装
 import { getUserSurveyResults } from '../api/modules/survey'
@@ -32,6 +32,7 @@ const isEditingUser = ref(false)
 const editingUserId = ref(null)
 const isEditingScheme = ref(false)
 const editingSchemeId = ref(null)
+const isExecutingScenario = ref(false)
 const newGroupName = ref('')
 // 正确初始化editingSurvey，避免dataStore.surveyTemplate为undefined时出现错误
 const editingSurvey = ref([])
@@ -1087,6 +1088,89 @@ const addStage = () => {
 const removeStage = (idx) => {
   if (schemeForm.value.stages.length === 1) return alert("至少保留一个阶段")
   schemeForm.value.stages = schemeForm.value.stages.filter((_, i) => i !== idx)
+}
+
+// 执行场景函数
+const handleExecuteScenario = async (stageIdx) => {
+  try {
+    // 记录开始时间
+    const startTime = new Date()
+    console.log(`[执行场景] 开始执行阶段 ${stageIdx + 1}，时间：${startTime.toISOString()}`)
+    
+    // 获取当前阶段配置
+    const stage = schemeForm.value.stages[stageIdx]
+    if (!stage) {
+      throw new Error('阶段配置不存在')
+    }
+    
+    // 构建设备控制参数
+    const deviceControls = []
+    const deviceIds = new Set()
+    
+    // 遍历所有设备，为每个设备创建控制参数
+    filteredDevices.value.forEach(device => {
+      // 去重处理
+      if (deviceIds.has(device.id)) {
+        console.warn('重复设备已跳过:', device.id, device.deviceName || device.deviceSn)
+        return
+      }
+      deviceIds.add(device.id)
+      
+      // 获取设备配置
+      let brightness, temp, sunBrightness, skyBrightness
+      
+      if (device.deviceType === DEVICE_TYPES.TYPE_485 || device.deviceType === DEVICE_TYPES.MCB) {
+        brightness = stage.devices?.[device.id]?.sun_brightness || 50
+        skyBrightness = stage.devices?.[device.id]?.sky_brightness || 40
+        temp = stage.devices?.[device.id]?.temp || 4500
+      } else {
+        brightness = stage.devices?.[device.id]?.brightness || 50
+        temp = stage.devices?.[device.id]?.temp || 4500
+      }
+      
+      // 构建控制参数
+      const control = {
+        deviceSn: device.deviceSn || device.sn || device.id.toString(),
+        dim: brightness,
+        cctK: temp
+      }
+      
+      // 对于485或MCB设备，添加天空亮度
+      if (device.deviceType === DEVICE_TYPES.TYPE_485 || device.deviceType === DEVICE_TYPES.MCB) {
+        control.skyDim = skyBrightness
+      }
+      
+      deviceControls.push(control)
+    })
+    
+    // 构建请求参数（移除subjectId）
+    const requestParams = {
+      deviceControls: deviceControls
+    }
+    
+    console.log(`[执行场景] 请求参数：`, requestParams)
+    
+    // 调用研究者专用API
+    const response = await researcherExecuteScenario(requestParams)
+    
+    // 记录响应结果
+    console.log(`[执行场景] 响应结果：`, response)
+    console.log(`[执行场景] 执行成功，耗时：${(new Date() - startTime) / 1000}秒`)
+    
+    // 显示成功提示
+    alert('执行场景成功')
+    
+  } catch (error) {
+    // 记录错误
+    console.error(`[执行场景] 执行失败：`, error)
+    
+    // 显示错误提示
+    alert(`执行场景失败：${error.message || '未知错误'}`)
+    
+  } finally {
+    // 记录结束时间
+    console.log(`[执行场景] 执行结束，时间：${new Date().toISOString()}`)
+  }
 }
 
 const handleSaveScheme = async () => {
@@ -2350,15 +2434,23 @@ const closeSchemeModal = () => {
               </button>
               
               <!-- 阶段时长配置 -->
-              <div class="flex items-center gap-2 mt-1 pl-4 mb-3">
-                <label class="text-xs text-gray-500">阶段时长</label>
-                <input 
-                  type="number" 
-                  :value="stage.duration"
-                  @input="handleStageDurationChange(idx, $event.target.value)"
-                  class="w-16 border rounded px-2 py-1 text-sm font-bold text-blue-600"
-                />
-                <span class="text-xs text-gray-500">分钟</span>
+              <div class="flex items-center justify-between gap-2 mt-1 pl-4 mb-3">
+                <div class="flex items-center gap-2">
+                  <label class="text-xs text-gray-500">阶段时长</label>
+                  <input 
+                    type="number" 
+                    :value="stage.duration"
+                    @input="handleStageDurationChange(idx, $event.target.value)"
+                    class="w-16 border rounded px-2 py-1 text-sm font-bold text-blue-600"
+                  />
+                  <span class="text-xs text-gray-500">分钟</span>
+                </div>
+                <button 
+                  @click="handleExecuteScenario(idx)"
+                  class="text-xs bg-green-50 text-green-600 px-2 py-1 rounded hover:bg-green-100 transition-colors"
+                >
+                  执行场景
+                </button>
               </div>
               
               <!-- 设备配置列表 -->

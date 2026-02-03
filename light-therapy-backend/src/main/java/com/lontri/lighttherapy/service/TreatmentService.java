@@ -31,4 +31,5 @@ public interface TreatmentService {
 	TreatmentSession resume(Long id);
 	TreatmentSession pause(Long id);
 	void manualControl(@Valid TreatmentDtos.ManualControlReq req);
+    void researcherExecute(@Valid TreatmentDtos.ResearcherExecuteReq req);
 }

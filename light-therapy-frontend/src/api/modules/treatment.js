@@ -4,6 +4,7 @@ export const createTreatment = (data) => http.post('/api/treatments', data)
 
 export const manualStartTreatment = (data) => http.post('/api/treatments/manual/start', data)
 export const manualControlTreatment = (data) => http.post(`/api/treatments/manual/control`, data)
+export const researcherExecuteScenario = (data) => http.post('/api/treatments/researcher/execute', data)
 
 export const listTreatments = (subjectId = null, status = null, startDate = null, endDate = null, page = 0, pageSize = 10) => http.get('/api/treatments', { params: { subjectId, status, startDate, endDate, page, pageSize } })
 

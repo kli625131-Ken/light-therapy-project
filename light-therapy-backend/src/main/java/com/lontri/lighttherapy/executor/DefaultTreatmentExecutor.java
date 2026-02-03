@@ -288,19 +288,25 @@ public class DefaultTreatmentExecutor implements TreatmentExecutor {
 
         // 1) 基础校验
         if (deviceSn == null || deviceSn.trim().isEmpty()) {
-            eventRepo.save(event(sessionId, "ERROR", "empty deviceSn(" + context + ")", json(
-                    "context", context,
-                    "reason", "deviceSn empty"
-            )));
+            // 研究者执行场景（sessionId=0）时跳过事件记录
+            if (sessionId != 0) {
+                eventRepo.save(event(sessionId, "ERROR", "empty deviceSn(" + context + ")", json(
+                        "context", context,
+                        "reason", "deviceSn empty"
+                )));
+            }
             return false;
         }
 
         if (cmds == null || cmds.isEmpty()) {
-            eventRepo.save(event(sessionId, "ERROR", "empty cmds(" + context + ") deviceSn=" + deviceSn, json(
-                    "context", context,
-                    "deviceSn", deviceSn,
-                    "reason", "cmds empty"
-            )));
+            // 研究者执行场景（sessionId=0）时跳过事件记录
+            if (sessionId != 0) {
+                eventRepo.save(event(sessionId, "ERROR", "empty cmds(" + context + ") deviceSn=" + deviceSn, json(
+                        "context", context,
+                        "deviceSn", deviceSn,
+                        "reason", "cmds empty"
+                )));
+            }
             return false;
         }
 
@@ -310,11 +316,14 @@ public class DefaultTreatmentExecutor implements TreatmentExecutor {
                 .collect(java.util.stream.Collectors.toList());
 
         if (sendList.isEmpty()) {
-            eventRepo.save(event(sessionId, "ERROR", "all cmds blank(" + context + ") deviceSn=" + deviceSn, json(
-                    "context", context,
-                    "deviceSn", deviceSn,
-                    "reason", "all cmds blank"
-            )));
+            // 研究者执行场景（sessionId=0）时跳过事件记录
+            if (sessionId != 0) {
+                eventRepo.save(event(sessionId, "ERROR", "all cmds blank(" + context + ") deviceSn=" + deviceSn, json(
+                        "context", context,
+                        "deviceSn", deviceSn,
+                        "reason", "all cmds blank"
+                )));
+            }
             return false;
         }
 
@@ -349,26 +358,32 @@ public class DefaultTreatmentExecutor implements TreatmentExecutor {
 
             if (ok) {
                 // 成功事件（可选，但很利于排查）
-                eventRepo.save(event(sessionId, "CMD_SENT",
-                        "sent cmd(" + context + ") deviceSn=" + deviceSn,
-                        json(
-                                "context", context,
-                                "deviceSn", deviceSn,
-                                "cmd", shrink(cmd, 256),
-                                "retry", ok ? "0" : String.valueOf(SEND_RETRY)
-                        )));
+                // 研究者执行场景（sessionId=0）时跳过事件记录
+                if (sessionId != 0) {
+                    eventRepo.save(event(sessionId, "CMD_SENT",
+                            "sent cmd(" + context + ") deviceSn=" + deviceSn,
+                            json(
+                                    "context", context,
+                                    "deviceSn", deviceSn,
+                                    "cmd", shrink(cmd, 256),
+                                    "retry", ok ? "0" : String.valueOf(SEND_RETRY)
+                            )));
+                }
             } else {
                 allOk = false;
 
-                eventRepo.save(event(sessionId, "CMD_SEND_FAILED",
-                        "send failed(" + context + ") deviceSn=" + deviceSn,
-                        json(
-                                "context", context,
-                                "deviceSn", deviceSn,
-                                "cmd", shrink(cmd, 256),
-                                "retry", String.valueOf(SEND_RETRY),
-                                "error", lastEx == null ? "unknown" : shrink(lastEx.toString(), 512)
-                        )));
+                // 研究者执行场景（sessionId=0）时跳过事件记录
+                if (sessionId != 0) {
+                    eventRepo.save(event(sessionId, "CMD_SEND_FAILED",
+                            "send failed(" + context + ") deviceSn=" + deviceSn,
+                            json(
+                                    "context", context,
+                                    "deviceSn", deviceSn,
+                                    "cmd", shrink(cmd, 256),
+                                    "retry", String.valueOf(SEND_RETRY),
+                                    "error", lastEx == null ? "unknown" : shrink(lastEx.toString(), 512)
+                            )));
+                }
 
                 // 你可以选择：遇到某条失败就不继续发后续命令（更保守）
                 // break;
@@ -384,8 +399,11 @@ public class DefaultTreatmentExecutor implements TreatmentExecutor {
 
         // 防御：deviceSn不能为空
         if (deviceSn == null || deviceSn.trim().isEmpty()) {
-            eventRepo.save(event(sessionId, "ERROR", "manual control invalid deviceSn",
-                json("reason", "deviceSn cannot be null or empty")));
+            // 研究者执行场景（sessionId=0）时跳过事件记录
+            if (sessionId != 0) {
+                eventRepo.save(event(sessionId, "ERROR", "manual control invalid deviceSn",
+                    json("reason", "deviceSn cannot be null or empty")));
+            }
             return false;
         }
 
@@ -397,24 +415,30 @@ public class DefaultTreatmentExecutor implements TreatmentExecutor {
         if (cctK != null) nonNullCount++;
         if (skyCctK != null) nonNullCount++;
         if (nonNullCount == 0) {
-            eventRepo.save(event(sessionId, "ERROR", "manual control invalid payload",
-                json("deviceSn", deviceSn, "dim", String.valueOf(dim), "skyDim", String.valueOf(skyDim), "cctK", String.valueOf(cctK),
-                     "reason", "at least one of dim, skyDim or cctK required")));
+            // 研究者执行场景（sessionId=0）时跳过事件记录
+            if (sessionId != 0) {
+                eventRepo.save(event(sessionId, "ERROR", "manual control invalid payload",
+                    json("deviceSn", deviceSn, "dim", String.valueOf(dim), "skyDim", String.valueOf(skyDim), "cctK", String.valueOf(cctK),
+                         "reason", "at least one of dim, skyDim or cctK required")));
+            }
             return false;
         }
 
         // 打印设备信息
         deviceRepository.findByDeviceSn(deviceSn).ifPresent(d -> {
-            eventRepo.save(event(sessionId, "INFO", "device info", json(
-                    "deviceSn", d.getDeviceSn(),
-                    "deviceType", d.getDeviceType(),
-                    "sendMode", d.getSendMode(),
-                    "gatewayId", d.getGatewayId(),
-                    "udpIp", d.getUdpIp(),
-                    "udpPort", d.getUdpPort(),
-                    "tcpServerIp", d.getTcpServerIp(),
-                    "tcpServerPort", d.getTcpServerPort()
-            )));
+            // 研究者执行场景（sessionId=0）时跳过事件记录
+            if (sessionId != 0) {
+                eventRepo.save(event(sessionId, "INFO", "device info", json(
+                        "deviceSn", d.getDeviceSn(),
+                        "deviceType", d.getDeviceType(),
+                        "sendMode", d.getSendMode(),
+                        "gatewayId", d.getGatewayId(),
+                        "udpIp", d.getUdpIp(),
+                        "udpPort", d.getUdpPort(),
+                        "tcpServerIp", d.getTcpServerIp(),
+                        "tcpServerPort", d.getTcpServerPort()
+                )));
+            }
         });
 
         BuiltCommands cmds = commandBuilder.buildDimCctCommands(deviceSn, dim, sumDim, skyDim, cctK, skyCctK);
@@ -440,8 +464,11 @@ public class DefaultTreatmentExecutor implements TreatmentExecutor {
         }
 
         if (commands.isEmpty()) {
-            eventRepo.save(event(sessionId, "CMD_BUILD_EMPTY", "manual control cmd empty",
-                json("deviceSn", deviceSn, "dim", String.valueOf(dim), "skyDim", String.valueOf(skyDim), "cctK", String.valueOf(cctK))));
+            // 研究者执行场景（sessionId=0）时跳过事件记录
+            if (sessionId != 0) {
+                eventRepo.save(event(sessionId, "CMD_BUILD_EMPTY", "manual control cmd empty",
+                    json("deviceSn", deviceSn, "dim", String.valueOf(dim), "skyDim", String.valueOf(skyDim), "cctK", String.valueOf(cctK))));
+            }
             return false;
         }
 
@@ -459,19 +486,22 @@ public class DefaultTreatmentExecutor implements TreatmentExecutor {
         // 构建kind字符串，用于事件记录
         String kindStr = String.join(", ", kinds);
 
-        eventRepo.save(event(
-            sessionId,
-            "MANUAL_CONTROL",
-            "manual control " + kindStr + " deviceSn=" + deviceSn + " ok=" + allOk,
-            json("deviceSn", deviceSn,
-                 "kind", kindStr,
-                 "dim", dim == null ? null : String.valueOf(dim),
-                 "skyDim", skyDim == null ? null : String.valueOf(skyDim),
-                 "cctK", cctK == null ? null : String.valueOf(cctK),
-                 "ok", String.valueOf(allOk),
-                 "source", source,
-                 "note", note)
-        ));
+        // 研究者执行场景（sessionId=0）时跳过事件记录
+        if (sessionId != 0) {
+            eventRepo.save(event(
+                sessionId,
+                "MANUAL_CONTROL",
+                "manual control " + kindStr + " deviceSn=" + deviceSn + " ok=" + allOk,
+                json("deviceSn", deviceSn,
+                     "kind", kindStr,
+                     "dim", dim == null ? null : String.valueOf(dim),
+                     "skyDim", skyDim == null ? null : String.valueOf(skyDim),
+                     "cctK", cctK == null ? null : String.valueOf(cctK),
+                     "ok", String.valueOf(allOk),
+                     "source", source,
+                     "note", note)
+            ));
+        }
 
         return allOk;
     }
@@ -541,6 +571,11 @@ public class DefaultTreatmentExecutor implements TreatmentExecutor {
     // }
 
     private void restoreDefault(long sessionId, String reason) {
+        // 研究者执行场景（sessionId=0）时跳过恢复默认值
+        if (sessionId == 0) {
+            return;
+        }
+        
         List<String> sns = getDeviceSnsFromSnapshot(sessionId);
         Integer defaultDim = treatmentDefaults.defaultDim();        // 使用配置文件中的默认亮度
         Integer defaultSumdim = treatmentDefaults.defaultSumdim();        // 使用配置文件中的默认亮度

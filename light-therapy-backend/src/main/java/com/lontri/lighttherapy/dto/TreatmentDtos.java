@@ -250,5 +250,80 @@ public class TreatmentDtos {
             }
         }
     }
+    
+    // 研究者执行场景请求
+    public static class ResearcherExecuteReq {
+        @NotNull public List<DeviceControlParam> deviceControls;
+        private String source;
+        private String note;
+        
+        public List<DeviceControlParam> getDeviceControls() {
+            return deviceControls;
+        }
+        
+        public void setDeviceControls(List<DeviceControlParam> deviceControls) {
+            this.deviceControls = deviceControls;
+        }
+        
+        public String getSource() {
+            return source;
+        }
+        
+        public void setSource(String source) {
+            this.source = source;
+        }
+        
+        public String getNote() {
+            return note;
+        }
+        
+        public void setNote(String note) {
+            this.note = note;
+        }
+        
+        // 设备控制参数内部类
+        public static class DeviceControlParam {
+            @NotBlank private String deviceSn;
+            @Min(0) @Max(100)  // 亮度百分比 (0-100%)
+            @NotNull private Integer dim;
+            @Min(2700) @Max(10000) // 色温 (2700-10000K)
+            @NotNull private Integer cctK;
+            // 可选：485设备天空光亮度百分比 (0-100%)
+            @Min(0) @Max(100)
+            private Integer skyDim;
+            
+            public String getDeviceSn() {
+                return deviceSn;
+            }
+            
+            public void setDeviceSn(String deviceSn) {
+                this.deviceSn = deviceSn;
+            }
+            
+            public Integer getDim() {
+                return dim;
+            }
+            
+            public void setDim(Integer dim) {
+                this.dim = dim;
+            }
+            
+            public Integer getCctK() {
+                return cctK;
+            }
+            
+            public void setCctK(Integer cctK) {
+                this.cctK = cctK;
+            }
+            
+            public Integer getSkyDim() {
+                return skyDim;
+            }
+            
+            public void setSkyDim(Integer skyDim) {
+                this.skyDim = skyDim;
+            }
+        }
+    }
 
 }

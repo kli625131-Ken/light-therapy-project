@@ -423,6 +423,41 @@ public class TreatmentServiceImpl implements TreatmentService {
             );
         }
     }
+    
+    @Override
+    @Transactional
+    public void researcherExecute(@Valid TreatmentDtos.ResearcherExecuteReq req) {
+        // 验证设备控制列表非空
+        if (req.getDeviceControls() == null || req.getDeviceControls().isEmpty()) {
+            throw new BizException(40040, "device controls cannot be empty", HttpStatus.BAD_REQUEST);
+        }
+        
+        // 处理每个设备的控制请求
+        for (TreatmentDtos.ResearcherExecuteReq.DeviceControlParam param : req.getDeviceControls()) {
+            String deviceSn = param.getDeviceSn().trim();
+            Integer dim = param.getDim();
+            Integer cctK = param.getCctK();
+            Integer skyDim = param.getSkyDim();
+            
+            // 验证设备存在
+            Device device = deviceRepo.findByDeviceSn(deviceSn)
+                .orElseThrow(() -> new BizException(40440, "device not found: " + deviceSn, HttpStatus.NOT_FOUND));
+            
+            // 调用执行器控制设备
+            // 注意：这里使用0作为sessionId，因为研究者执行场景不需要关联到特定会话
+            executor.manualControlOnce(
+                0L, // 研究者执行场景不需要会话ID
+                deviceSn,
+                dim,
+                null, // sumDim 默认为null
+                skyDim,
+                cctK,
+                null, // skyCctK 默认为null
+                req.getSource(),
+                req.getNote()
+            );
+        }
+    }
 
     // =========================
     // Query
