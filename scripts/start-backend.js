@@ -105,7 +105,17 @@ function startBackendServer() {
   
   try {
     const startCommand = process.platform === 'win32' ? 'mvn.cmd spring-boot:run' : 'mvn spring-boot:run';
-    const serverProcess = exec(startCommand, { cwd: BACKEND_DIR, stdio: 'inherit' });
+    const serverProcess = exec(startCommand, { cwd: BACKEND_DIR });
+    
+    // 捕获标准输出
+    serverProcess.stdout.on('data', (data) => {
+      process.stdout.write(data);
+    });
+    
+    // 捕获标准错误
+    serverProcess.stderr.on('data', (data) => {
+      process.stderr.write(data);
+    });
     
     serverProcess.on('error', (error) => {
       handleError(error, '启动后端服务器失败');
@@ -118,8 +128,8 @@ function startBackendServer() {
       }
     });
     
-    log('后端开发服务器启动成功', 'success');
-    log('后端服务器正在运行中...', 'info');
+    log('后端开发服务器正在启动...', 'info');
+    log('请等待服务器启动完成并查看下方的启动信息', 'info');
   } catch (error) {
     handleError(error, '启动后端服务器失败');
   }

@@ -91,7 +91,17 @@ function startFrontendServer() {
   
   try {
     const startCommand = process.platform === 'win32' ? 'npm.cmd run dev' : 'npm run dev';
-    const serverProcess = exec(startCommand, { cwd: FRONTEND_DIR, stdio: 'inherit' });
+    const serverProcess = exec(startCommand, { cwd: FRONTEND_DIR });
+    
+    // 捕获标准输出
+    serverProcess.stdout.on('data', (data) => {
+      process.stdout.write(data);
+    });
+    
+    // 捕获标准错误
+    serverProcess.stderr.on('data', (data) => {
+      process.stderr.write(data);
+    });
     
     serverProcess.on('error', (error) => {
       handleError(error, '启动前端服务器失败');
@@ -104,8 +114,8 @@ function startFrontendServer() {
       }
     });
     
-    log('前端开发服务器启动成功', 'success');
-    log('请在浏览器中访问服务器输出的URL', 'info');
+    log('前端开发服务器正在启动...', 'info');
+    log('请等待服务器启动完成并查看下方的URL输出', 'info');
   } catch (error) {
     handleError(error, '启动前端服务器失败');
   }
