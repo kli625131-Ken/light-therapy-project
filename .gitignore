@@ -1,0 +1,30 @@
+# ===== 通用 =====
+.DS_Store
+Thumbs.db
+*.log
+*.tmp
+
+# ===== 环境变量 =====
+.env
+.env.*
+
+# ===== IDE =====
+.idea/
+.vscode/
+*.iml
+
+# ===== Java / Spring Boot =====
+**/target/
+**/*.class
+
+# ===== Node / Frontend =====
+**/node_modules/
+**/dist/
+**/build/
+
+# ===== 压缩 / 设计 / 大文件 =====
+*.zip
+*.rar
+*.7z
+*.exe
+*.dwg

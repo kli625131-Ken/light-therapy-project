@@ -1,0 +1,40 @@
+server:
+  port: 8080
+
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/light_therapy?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Tokyo&allowPublicKeyRetrieval=true
+    username: lontri
+    password: Admin123!
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+
+app:
+  jwt:
+    secret: "change-me-to-a-long-random-secret-change-me"
+    expireSeconds: 86400
+    
+treatment:
+  default:
+    dim: 50
+    cctK: 4500
+    sumdim: 50
+    skydim: 50
+    skycctK: 4500
+  conversion:
+    lux-to-percent-coefficient: 1.0
+    
+logging:
+  level:
+    org.flywaydb: DEBUG
+    com.zaxxer.hikari: DEBUG
+    com.lontri.lighttherapy: INFO
+    com.lontri.lighttherapy.infra.command: DEBUG
+    com.lontri.lighttherapy.infra.command.sender: DEBUG
+    com.lontri.lighttherapy.executor: DEBUG

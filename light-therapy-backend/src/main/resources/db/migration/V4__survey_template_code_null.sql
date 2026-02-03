@@ -1,0 +1,2 @@
+ALTER TABLE survey_template
+  MODIFY COLUMN `code` VARCHAR(64) NULL;
