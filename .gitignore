@@ -1,16 +1,18 @@
-# ===== 通用 =====
+# ===== OS / common =====
 .DS_Store
 Thumbs.db
 *.log
 *.tmp
 
-# ===== 环境变量 =====
+# ===== env (never commit secrets) =====
 .env
 .env.*
+!.env.example
+!.env.template
 
 # ===== IDE =====
-.idea/
 .vscode/
+.idea/
 *.iml
 
 # ===== AI / Tools =====
@@ -20,24 +22,23 @@ Thumbs.db
 # ===== Java / Spring Boot =====
 **/target/
 **/*.class
+**/.spring-boot-devtools.properties
 
 # ===== Node / Frontend =====
 **/node_modules/
 **/dist/
 **/build/
+**/.vite/
+**/.cache/
 
-# ===== 压缩 / 设计 / 大文件 =====
-*.zip
+# ===== Frontend built snapshots / exports (do not version) =====
+light-therapy-frontend/iotlight*/
+light-therapy-frontend/*.zip
+
+# ===== Archives / large binaries (optional) =====
+# 如果你想把 archive 也留在本地不进仓库，取消注释下一行：
+# archive/
 *.rar
 *.7z
 *.exe
 *.dwg
-
-# ===== Frontend build artifacts =====
-**/node_modules/
-**/dist/
-**/.vite/
-
-# ===== Frontend static builds =====
-**/iotlight*
-**/*.zip
