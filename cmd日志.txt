@@ -1,0 +1,278 @@
+
+D:\code\YangPuDemo\light-therapy-project-v2.0>git add .gitignore
+
+D:\code\YangPuDemo\light-therapy-project-v2.0>git add light-therapy-backend
+warning: in the working copy of 'light-therapy-backend/.mvn/wrapper/maven-wrapper.properties', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'light-therapy-backend/README.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'light-therapy-backend/mvnw', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'light-therapy-backend/mvnw.cmd', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'light-therapy-backend/pom.xml', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'light-therapy-backend/src/main/java/com/lontri/lighttherapy/common/ApiResponse.java', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'light-therapy-backend/src/main/java/com/lontri/lighttherapy/common/BizException.java', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'light-therapy-backend/src/main/java/com/lontri/lighttherapy/common/GlobalExceptionHandler.java', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'light-therapy-backend/src/main/java/com/lontri/lighttherapy/common/TraceIdFilter.java', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'light-therapy-backend/src/main/java/com/lontri/lighttherapy/config/JwtAuthenticationFilter.java', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'light-therapy-backend/src/main/java/com/lontri/lighttherapy/config/JwtTokenProvider.java', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'light-therapy-backend/src/main/java/com/lontri/lighttherapy/config/SecurityConfig.java', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'light-therapy-backend/src/main/java/com/lontri/lighttherapy/config/UserPrincipal.java', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'light-therapy-backend/src/main/java/com/lontri/lighttherapy/config/WebMvcConfig.java', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'light-therapy-backend/src/main/java/com/lontri/lighttherapy/controller/AuthController.java', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'light-therapy-backend/src/main/java/com/lontri/lighttherapy/controller/DeviceController.java', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'light-therapy-backend/src/main/java/com/lontri/lighttherapy/controller/DeviceTestController.java', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'light-therapy-backend/src/main/java/com/lontri/lighttherapy/controller/GroupController.java', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'light-therapy-backend/src/main/java/com/lontri/lighttherapy/controller/SchemeController.java', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'light-therapy-backend/src/main/java/com/lontri/lighttherapy/controller/SchemeSelfController.java', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'light-therapy-backend/src/main/java/com/lontri/lighttherapy/controller/SchemeStageController.java', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'light-therapy-backend/src/main/java/com/lontri/lighttherapy/controller/SchemeStageSelfController.java', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'light-therapy-backend/src/main/java/com/lontri/lighttherapy/controller/SubjectSelfController.java', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'light-therapy-backend/src/main/java/com/lontri/lighttherapy/controller/SurveyController.java', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'light-therapy-backend/src/main/java/com/lontri/lighttherapy/controller/TherapyController.java', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'light-therapy-backend/src/main/java/com/lontri/lighttherapy/controller/UserAdminController.java', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'light-therapy-backend/src/main/java/com/lontri/lighttherapy/device/codec/CodecConfig.java', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'light-therapy-backend/src/main/java/com/lontri/lighttherapy/dto/AuthDtos.java', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'light-therapy-backend/src/main/java/com/lontri/lighttherapy/dto/GroupDtos.java', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'light-therapy-backend/src/main/java/com/lontri/lighttherapy/dto/GroupResponseDto.java', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'light-therapy-backend/src/main/java/com/lontri/lighttherapy/dto/SchemeDtos.java', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'light-therapy-backend/src/main/java/com/lontri/lighttherapy/dto/SurveyDtos.java', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'light-therapy-backend/src/main/java/com/lontri/lighttherapy/dto/UserDtos.java', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'light-therapy-backend/src/main/java/com/lontri/lighttherapy/entity/ExperimentGroup.java', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'light-therapy-backend/src/main/java/com/lontri/lighttherapy/entity/Scheme.java', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'light-therapy-backend/src/main/java/com/lontri/lighttherapy/entity/SchemeStage.java', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'light-therapy-backend/src/main/java/com/lontri/lighttherapy/entity/SchemeStageDeviceConfig.java', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'light-therapy-backend/src/main/java/com/lontri/lighttherapy/entity/Subject.java', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'light-therapy-backend/src/main/java/com/lontri/lighttherapy/entity/User.java', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'light-therapy-backend/src/main/java/com/lontri/lighttherapy/infra/command/CommandGatewayRouter.java', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'light-therapy-backend/src/main/java/com/lontri/lighttherapy/repository/ExperimentGroupRepository.java', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'light-therapy-backend/src/main/java/com/lontri/lighttherapy/repository/SchemeGroupRepository.java', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'light-therapy-backend/src/main/java/com/lontri/lighttherapy/repository/SchemeRepository.java', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'light-therapy-backend/src/main/java/com/lontri/lighttherapy/repository/SchemeStageDeviceConfigRepository.java', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'light-therapy-backend/src/main/java/com/lontri/lighttherapy/repository/SchemeStageRepository.java', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'light-therapy-backend/src/main/java/com/lontri/lighttherapy/repository/SubjectRepository.java', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'light-therapy-backend/src/main/java/com/lontri/lighttherapy/repository/SurveyResultRepository.java', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'light-therapy-backend/src/main/java/com/lontri/lighttherapy/repository/TreatmentSessionRepository.java', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'light-therapy-backend/src/main/java/com/lontri/lighttherapy/repository/UserRepository.java', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'light-therapy-backend/src/main/java/com/lontri/lighttherapy/service/AuthService.java', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'light-therapy-backend/src/main/java/com/lontri/lighttherapy/service/CommandBuilderService.java', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'light-therapy-backend/src/main/java/com/lontri/lighttherapy/service/GroupService.java', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'light-therapy-backend/src/main/java/com/lontri/lighttherapy/service/SchemeService.java', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'light-therapy-backend/src/main/java/com/lontri/lighttherapy/service/SurveyService.java', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'light-therapy-backend/src/main/java/com/lontri/lighttherapy/service/UserService.java', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'light-therapy-backend/src/main/java/com/lontri/lighttherapy/service/impl/AuthServiceImpl.java', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'light-therapy-backend/src/main/java/com/lontri/lighttherapy/service/impl/GroupServiceImpl.java', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'light-therapy-backend/src/main/java/com/lontri/lighttherapy/service/impl/SchemeServiceImpl.java', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'light-therapy-backend/src/main/java/com/lontri/lighttherapy/service/impl/UserServiceImpl.java', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'light-therapy-backend/src/main/java/com/lontri/lighttherapy/util/SecurityUtils.java', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'light-therapy-backend/src/main/resources/application.yml', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'light-therapy-backend/src/main/resources/db/migration/V17__scheme_stage_device_config.sql', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'light-therapy-backend/src/main/resources/db/migration/V1__light_therapy_init.sql', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'light-therapy-backend/src/main/resources/db/migration/V20__add_sky_light_intensity_to_device_config.sql', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'light-therapy-backend/src/main/resources/db/migration/V22__remove_scheme_group_unique_constraint.sql', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'light-therapy-backend/src/main/resources/db/migration/V23__add_manual_scheme.sql', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'light-therapy-backend/start-now-flow.md', LF will be replaced by CRLF the next time Git touches it
+
+D:\code\YangPuDemo\light-therapy-project-v2.0>git add light-therapy-frontend
+
+D:\code\YangPuDemo\light-therapy-project-v2.0>git status
+On branch master
+
+No commits yet
+
+Changes to be committed:
+  (use "git rm --cached <file>..." to unstage)
+        new file:   .gitignore
+        new file:   light-therapy-backend/.classpath
+        new file:   light-therapy-backend/.mvn/wrapper/maven-wrapper.jar
+        new file:   light-therapy-backend/.mvn/wrapper/maven-wrapper.properties
+        new file:   light-therapy-backend/.project
+        new file:   light-therapy-backend/README.md
+        new file:   light-therapy-backend/mvnw
+        new file:   light-therapy-backend/mvnw.cmd
+        new file:   light-therapy-backend/pom.xml
+        new file:   light-therapy-backend/project_analysis_report.md
+        new file:   light-therapy-backend/run-project.ps1
+        new file:   light-therapy-backend/setup-and-run-fix.ps1
+        new file:   light-therapy-backend/setup-and-run.ps1
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/LightTherapyApplication.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/common/ApiResponse.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/common/BizException.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/common/GlobalExceptionHandler.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/common/TraceIdFilter.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/config/JwtAuthenticationFilter.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/config/JwtTokenProvider.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/config/SecurityConfig.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/config/TreatmentDefaultsProperties.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/config/UserPrincipal.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/config/WebMvcConfig.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/controller/AuthController.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/controller/DeviceController.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/controller/DeviceTestController.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/controller/GroupController.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/controller/HomeController.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/controller/SchemeController.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/controller/SchemeSelfController.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/controller/SchemeStageController.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/controller/SchemeStageSelfController.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/controller/SubjectController.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/controller/SubjectSelfController.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/controller/SurveyController.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/controller/TherapyController.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/controller/TreatmentController.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/controller/UserAdminController.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/device/DeviceInfo.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/device/codec/CodecConfig.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/device/codec/CommandParamTransform.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/device/template/CommandTemplate.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/device/template/CommandTemplateRepository.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/dto/AuthDtos.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/dto/GroupDtos.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/dto/GroupResponseDto.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/dto/SchemeDtos.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/dto/SubjectDtos.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/dto/SubjectListResp.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/dto/SurveyDtos.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/dto/TreatmentDtos.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/dto/UserDtos.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/entity/Device.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/entity/DeviceTypeConverter.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/entity/ExperimentGroup.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/entity/ExperimentGroupDevice.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/entity/Scheme.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/entity/SchemeDeviceScope.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/entity/SchemeGroup.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/entity/SchemeStage.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/entity/SchemeStageDeviceConfig.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/entity/SendMode.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/entity/Subject.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/entity/SurveyQuestion.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/entity/SurveyResult.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/entity/SurveyScale.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/entity/SurveyTemplate.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/entity/TreatmentEvent.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/entity/TreatmentSession.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/entity/TreatmentSessionDevice.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/entity/User.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/enums/DeviceType.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/enums/EventType.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/enums/SchemeScope.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/enums/SendMode.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/enums/SessionAction.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/enums/TreatmentSessionStatus.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/executor/DefaultTreatmentExecutor.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/executor/TreatmentExecutor.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/executor/port/Clock.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/executor/port/CommandGateway.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/executor/port/DeviceSelector.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/executor/port/EventSink.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/executor/port/LuxCurveMapper.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/executor/port/SessionStore.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/executor/port/Sleeper.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/executor/port/StageProvider.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/executor/port/TreatmentDefaults.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/executor/util/LightProtocol.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/infra/command/CommandGatewayRouter.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/infra/command/CommandSendException.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/infra/command/TcpCommandGateway.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/infra/command/UdpCommandGateway.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/infra/command/sender/TcpCommandSender.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/infra/command/sender/UdpCommandSender.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/infra/defaults/ConfigTreatmentDefaults.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/infra/device/DbDeviceSelector.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/infra/event/JpaEventSink.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/infra/lux/LinearLuxCurveMapper.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/infra/lux/LuxToPercentMapper.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/infra/session/JpaSessionStore.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/infra/stage/JpaStageProvider.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/infra/time/SystemClock.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/infra/time/ThreadSleeper.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/repository/DeviceRepository.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/repository/ExperimentGroupDeviceRepository.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/repository/ExperimentGroupRepository.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/repository/SchemeDeviceScopeRepository.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/repository/SchemeGroupRepository.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/repository/SchemeRepository.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/repository/SchemeStageDeviceConfigRepository.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/repository/SchemeStageRepository.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/repository/SubjectRepository.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/repository/SurveyQuestionRepository.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/repository/SurveyResultRepository.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/repository/SurveyScaleRepository.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/repository/SurveyTemplateRepository.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/repository/TreatmentEventRepository.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/repository/TreatmentSessionDeviceRepository.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/repository/TreatmentSessionRepository.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/repository/UserRepository.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/service/AuthService.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/service/CommandBuilderService.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/service/DeviceService.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/service/GroupService.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/service/SchemeService.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/service/SubjectSnapshotService.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/service/SurveyResultService.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/service/SurveyService.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/service/SurveyTemplateService.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/service/TcpSenderService.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/service/TreatmentEventService.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/service/TreatmentService.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/service/TreatmentSessionService.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/service/TreatmentSessionStateMachine.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/service/UdpSenderService.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/service/UserService.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/service/impl/AuthServiceImpl.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/service/impl/DeviceServiceImpl.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/service/impl/GroupServiceImpl.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/service/impl/SchemeServiceImpl.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/service/impl/SurveyServiceImpl.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/service/impl/TreatmentEventServiceImpl.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/service/impl/TreatmentServiceImpl.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/service/impl/TreatmentSessionStateMachineImpl.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/service/impl/UserServiceImpl.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/util/DT8Util.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/util/SecurityUtils.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/util/SocketCmdUtil.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/util/StringUtil.java
+        new file:   light-therapy-backend/src/main/java/com/lontri/lighttherapy/util/TreatmentEventFactory.java
+        new file:   light-therapy-backend/src/main/resources/application.properties
+        new file:   light-therapy-backend/src/main/resources/application.yml
+        new file:   light-therapy-backend/src/main/resources/db/migration/V10__scheme_device_scope_enum_to_varchar2.sql
+        new file:   light-therapy-backend/src/main/resources/db/migration/V11__command_template_table_create.sql
+        new file:   light-therapy-backend/src/main/resources/db/migration/V12__command_template_table_create2.sql
+        new file:   light-therapy-backend/src/main/resources/db/migration/V13__command_template_table_create3.sql
+        new file:   light-therapy-backend/src/main/resources/db/migration/V14__scheme_add_scope.sql
+        new file:   light-therapy-backend/src/main/resources/db/migration/V15__experiment_group_device.sql
+        new file:   light-therapy-backend/src/main/resources/db/migration/V16__fix_tsd_unique_index.sql
+        new file:   light-therapy-backend/src/main/resources/db/migration/V17__scheme_stage_device_config.sql
+        new file:   light-therapy-backend/src/main/resources/db/migration/V1__light_therapy_init.sql
+        new file:   light-therapy-backend/src/main/resources/db/migration/V20__add_sky_light_intensity_to_device_config.sql
+        new file:   light-therapy-backend/src/main/resources/db/migration/V21__add_device_name_to_device.sql
+        new file:   light-therapy-backend/src/main/resources/db/migration/V22__remove_scheme_group_unique_constraint.sql
+        new file:   light-therapy-backend/src/main/resources/db/migration/V23__add_manual_scheme.sql
+        new file:   light-therapy-backend/src/main/resources/db/migration/V24__experiment_group_survey_templates.sql
+        new file:   light-therapy-backend/src/main/resources/db/migration/V25__recreate_experiment_group_survey_templates.sql
+        new file:   light-therapy-backend/src/main/resources/db/migration/V2__scheme_stage_duration_to_minutes.sql
+        new file:   light-therapy-backend/src/main/resources/db/migration/V3__survey_scale_template_group_result.sql
+        new file:   light-therapy-backend/src/main/resources/db/migration/V4__survey_template_code_null.sql
+        new file:   light-therapy-backend/src/main/resources/db/migration/V5__treatment_running_unique_mysql.sql
+        new file:   light-therapy-backend/src/main/resources/db/migration/V6__device_add_gateway_id.sql
+        new file:   light-therapy-backend/src/main/resources/db/migration/V7__device_gateway_type_enum.sql
+        new file:   light-therapy-backend/src/main/resources/db/migration/V8__device_gateway_type_enum2.sql
+        new file:   light-therapy-backend/src/main/resources/db/migration/V9__scheme_device_scope_enum_to_varchar.sql
+        new file:   light-therapy-backend/start-now-flow.md
+        new file:   light-therapy-backend/start.bat
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+        .metadata/
+        .trae/
+        "Agent\346\211\247\350\241\214\350\256\241\345\210\222.md"
+        CheckTableStructure.java
+        UdpCommandTest.java
+        UdpTest.java
+        light-therapy-Frontend/
+        package-lock.json
+        package.json
+        subjects_response.json
+        udp_listener.java
+        "\345\217\257\346\211\247\350\241\214\347\211\210\346\234\254\344\277\256\346\224\271\351\234\200\346\261\202\346\226\207\346\241\243.md"
+
+
+D:\code\YangPuDemo\light-therapy-project-v2.0>
