@@ -13,6 +13,10 @@ Thumbs.db
 .vscode/
 *.iml
 
+# ===== AI / Tools =====
+.trae/
+.metadata/
+
 # ===== Java / Spring Boot =====
 **/target/
 **/*.class
@@ -28,3 +32,12 @@ Thumbs.db
 *.7z
 *.exe
 *.dwg
+
+# ===== Frontend build artifacts =====
+**/node_modules/
+**/dist/
+**/.vite/
+
+# ===== Frontend static builds =====
+**/iotlight*
+**/*.zip
