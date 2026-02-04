@@ -22,34 +22,54 @@ import com.lontri.lighttherapy.service.TreatmentSessionStateMachine;
 @Service
 public class TreatmentSessionStateMachineImpl implements TreatmentSessionStateMachine {
 
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory
+            .getLogger(TreatmentSessionStateMachineImpl.class);
+
     private final TreatmentSessionRepository sessionRepo;
     private final TreatmentEventService eventService;
-    private final SurveyResultRepository surveyResultRepo;
     private final SurveyTemplateService surveyTemplateService;
     private final TreatmentExecutor treatmentExecutor;
-    
+
     @Value("${lighttherapy.manual-scheme-id:1}")
     private Long manualSchemeId;
 
+    private final com.lontri.lighttherapy.service.SurveyService surveyService;
+    private final com.lontri.lighttherapy.repository.SubjectRepository subjectRepo;
+    private final com.lontri.lighttherapy.repository.ExperimentGroupRepository experimentGroupRepo;
+
     public TreatmentSessionStateMachineImpl(TreatmentSessionRepository sessionRepo,
-                                           TreatmentEventService eventService,
-                                           SurveyResultRepository surveyResultRepo,
-                                           SurveyTemplateService surveyTemplateService,
-                                           TreatmentExecutor treatmentExecutor) {
+            TreatmentEventService eventService,
+            SurveyTemplateService surveyTemplateService,
+            TreatmentExecutor treatmentExecutor,
+            com.lontri.lighttherapy.service.SurveyService surveyService,
+            com.lontri.lighttherapy.repository.SubjectRepository subjectRepo,
+            com.lontri.lighttherapy.repository.ExperimentGroupRepository experimentGroupRepo) {
         this.sessionRepo = sessionRepo;
         this.eventService = eventService;
-        this.surveyResultRepo = surveyResultRepo;
         this.surveyTemplateService = surveyTemplateService;
         this.treatmentExecutor = treatmentExecutor;
+        this.surveyService = surveyService;
+        this.subjectRepo = subjectRepo;
+        this.experimentGroupRepo = experimentGroupRepo;
     }
 
     @Override
     @Transactional
     public TreatmentSession apply(Long sessionId, Action action, String reason) {
-        TreatmentSession s = sessionRepo.findById(sessionId)
+        log.info("Applying action {} to session {}", action, sessionId);
+
+        // Use pessimistic lock to prevent concurrent modifications (Double Submission)
+        TreatmentSession s = sessionRepo.findByIdWithLock(sessionId)
                 .orElseThrow(() -> new BizException(40410, "session not found", HttpStatus.NOT_FOUND));
 
         TreatmentSessionStatus from = s.getStatus();
+
+        // Idempotency Check for END action
+        if (action == Action.END && from == TreatmentSessionStatus.FINISHED) {
+            log.warn("Session {} is already FINISHED. Ignoring duplicate END request. Returning success.", sessionId);
+            return s;
+        }
+
         Transition t = Transition.of(action, from);
 
         if (!t.allowed) {
@@ -67,8 +87,7 @@ public class TreatmentSessionStateMachineImpl implements TreatmentSessionStateMa
             boolean otherRunning = sessionRepo.existsBySubjectIdAndStatusAndIdNot(
                     s.getSubjectId(),
                     TreatmentSessionStatus.RUNNING,
-                    s.getId()
-            );
+                    s.getId());
             if (otherRunning) {
                 throw new BizException(40902,
                         "subject already has a RUNNING session",
@@ -104,9 +123,9 @@ public class TreatmentSessionStateMachineImpl implements TreatmentSessionStateMa
                 break;
         }
 
-     // 3) 保存
+        // 3) 保存
         s = sessionRepo.save(s);
-        
+
         // 4) 当启动治疗时，启动执行器
         if (action == Action.START && s.getStatus() == TreatmentSessionStatus.RUNNING) {
             // 只有非手动模式才调用startScheme，手动模式在TreatmentServiceImpl.manualStart的afterCommit中处理
@@ -114,31 +133,67 @@ public class TreatmentSessionStateMachineImpl implements TreatmentSessionStateMa
                 // 创建final变量保存会话ID，用于内部类访问
                 final Long session_Id = s.getId();
                 // 重要：必须在事务提交后执行，否则执行器无法读取到刚创建的会话和设备关联信息
-                if (org.springframework.transaction.support.TransactionSynchronizationManager.isSynchronizationActive()) {
+                if (org.springframework.transaction.support.TransactionSynchronizationManager
+                        .isSynchronizationActive()) {
                     org.springframework.transaction.support.TransactionSynchronizationManager.registerSynchronization(
-                        new org.springframework.transaction.support.TransactionSynchronization() {
-                            @Override public void afterCommit() {
-                                treatmentExecutor.startScheme(session_Id);
-                            }
-                        }
-                    );
+                            new org.springframework.transaction.support.TransactionSynchronization() {
+                                @Override
+                                public void afterCommit() {
+                                    treatmentExecutor.startScheme(session_Id);
+                                }
+                            });
                 } else {
                     treatmentExecutor.startScheme(sessionId);
                 }
             }
         }
-        
-        // 4) 当治疗结束时，创建一个survey result
+
+        // 4) 当治疗结束时，创建survey result
         if (action == Action.END && s.getStatus() == TreatmentSessionStatus.FINISHED) {
-            SurveyResult surveyResult = new SurveyResult();
-            surveyResult.setSubjectId(s.getSubjectId());
-            surveyResult.setSessionId(s.getId());
-            // 获取默认模板的ID
-            Long defaultTemplateId = surveyTemplateService.getDefaultTemplate().id;
-            surveyResult.setTemplateId(defaultTemplateId);
-            surveyResult.setStatus("PENDING");
-            surveyResult.setFilledAt(now);
-            surveyResultRepo.save(surveyResult);
+            log.info("=== [Survey Creation] Session {} ended, starting survey result creation ===", s.getId());
+            boolean processed = false;
+            try {
+                // Find subject to get group ID
+                com.lontri.lighttherapy.entity.Subject subject = subjectRepo.findById(s.getSubjectId()).orElse(null);
+                log.info("[Survey Creation] Subject found: {}, GroupId: {}",
+                    subject != null ? subject.getId() : "null",
+                    subject != null ? subject.getGroupId() : "null");
+
+                if (subject != null && subject.getGroupId() != null) {
+                    // IMPORTANT: Use findByIdWithSurveyTemplates to eagerly load the surveyTemplates collection
+                    // Otherwise, the lazy-loaded collection will be empty/null when accessed in createMissingSurveyResults
+                    com.lontri.lighttherapy.entity.ExperimentGroup group = experimentGroupRepo
+                            .findByIdWithSurveyTemplates(subject.getGroupId()).orElse(null);
+
+                    log.info("[Survey Creation] Group found: {}, SurveyTemplates count: {}",
+                        group != null ? group.getId() : "null",
+                        group != null && group.getSurveyTemplates() != null ? group.getSurveyTemplates().size() : 0);
+
+                    if (group != null) {
+                        // Isolated transaction: any failure here will NOT roll back the session END
+                        surveyService.createMissingSurveyResults(group, s);
+                        processed = true;
+                        log.info("[Survey Creation] Survey results creation completed for session {}", s.getId());
+                    } else {
+                        log.warn("[Survey Creation] Group not found for groupId: {}", subject.getGroupId());
+                    }
+                } else {
+                    log.warn("[Survey Creation] Subject or GroupId is null for session {}", s.getId());
+                }
+            } catch (Exception e) {
+                log.error("Failed to create group survey results for session {}. Continued to ensure END state.",
+                        s.getId(), e);
+            }
+
+            if (!processed) {
+                try {
+                    Long defaultTemplateId = surveyTemplateService.getDefaultTemplate().id;
+                    // Isolated transaction
+                    surveyService.createDefaultSurveyResult(s, defaultTemplateId);
+                } catch (Exception e) {
+                    log.error("Failed to create default survey result for session {}.", s.getId(), e);
+                }
+            }
         }
 
         // 4) 记事件（强制）
@@ -149,7 +204,8 @@ public class TreatmentSessionStateMachineImpl implements TreatmentSessionStateMa
     }
 
     private String normalizeReason(String reason) {
-        if (reason == null) return null;
+        if (reason == null)
+            return null;
         String r = reason.trim();
         return r.isEmpty() ? null : r;
     }
@@ -173,7 +229,8 @@ public class TreatmentSessionStateMachineImpl implements TreatmentSessionStateMa
 
             switch (action) {
                 case START:
-                    if (terminal) return new Transition(false, null, EventType.SESSION_STARTED);
+                    if (terminal)
+                        return new Transition(false, null, EventType.SESSION_STARTED);
                     // PLANNED / PAUSED -> RUNNING
                     if (from == TreatmentSessionStatus.PLANNED || from == TreatmentSessionStatus.PAUSED) {
                         return new Transition(true, TreatmentSessionStatus.RUNNING, EventType.SESSION_STARTED);
@@ -182,15 +239,18 @@ public class TreatmentSessionStateMachineImpl implements TreatmentSessionStateMa
                     return new Transition(false, null, EventType.SESSION_STARTED);
 
                 case PAUSE:
-                    if (from != TreatmentSessionStatus.RUNNING) return new Transition(false, null, EventType.SESSION_PAUSED);
+                    if (from != TreatmentSessionStatus.RUNNING)
+                        return new Transition(false, null, EventType.SESSION_PAUSED);
                     return new Transition(true, TreatmentSessionStatus.PAUSED, EventType.SESSION_PAUSED);
 
                 case RESUME:
-                    if (from != TreatmentSessionStatus.PAUSED) return new Transition(false, null, EventType.SESSION_RESUMED);
+                    if (from != TreatmentSessionStatus.PAUSED)
+                        return new Transition(false, null, EventType.SESSION_RESUMED);
                     return new Transition(true, TreatmentSessionStatus.RUNNING, EventType.SESSION_RESUMED);
 
                 case END:
-                    if (terminal) return new Transition(false, null, EventType.SESSION_DONE);
+                    if (terminal)
+                        return new Transition(false, null, EventType.SESSION_DONE);
                     // RUNNING / PAUSED -> FINISHED
                     if (from == TreatmentSessionStatus.RUNNING || from == TreatmentSessionStatus.PAUSED) {
                         return new Transition(true, TreatmentSessionStatus.FINISHED, EventType.SESSION_DONE);
@@ -199,7 +259,8 @@ public class TreatmentSessionStateMachineImpl implements TreatmentSessionStateMa
                     return new Transition(false, null, EventType.SESSION_DONE);
 
                 case CANCEL:
-                    if (terminal) return new Transition(false, null, EventType.SESSION_CANCELLED);
+                    if (terminal)
+                        return new Transition(false, null, EventType.SESSION_CANCELLED);
                     // PLANNED / RUNNING / PAUSED -> CANCELLED
                     if (from == TreatmentSessionStatus.PLANNED
                             || from == TreatmentSessionStatus.RUNNING
@@ -209,7 +270,8 @@ public class TreatmentSessionStateMachineImpl implements TreatmentSessionStateMa
                     return new Transition(false, null, EventType.SESSION_CANCELLED);
 
                 case FAIL:
-                    if (terminal) return new Transition(false, null, EventType.SESSION_FAILED);
+                    if (terminal)
+                        return new Transition(false, null, EventType.SESSION_FAILED);
                     // 没有 FAILED 状态：失败落 CANCELLED + 事件 SESSION_FAILED
                     if (from == TreatmentSessionStatus.PLANNED
                             || from == TreatmentSessionStatus.RUNNING

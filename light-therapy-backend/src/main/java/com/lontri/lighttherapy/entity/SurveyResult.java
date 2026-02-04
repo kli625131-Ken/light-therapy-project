@@ -4,43 +4,39 @@ import javax.persistence.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+
 @Entity
-@Table(
-	    name = "survey_result",
-	    uniqueConstraints = @UniqueConstraint(
-	        name = "uk_result_session_template",
-	        columnNames = {"session_id", "template_id"}
-	    )
-	)
+@Table(name = "survey_result", uniqueConstraints = @UniqueConstraint(name = "uk_result_session_template", columnNames = {
+		"session_id", "template_id" }))
 public class SurveyResult {
 	@Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
 
-    @Column(name = "template_id", nullable = false)
-    private Long templateId;
+	@Column(name = "template_id", nullable = false)
+	private Long templateId;
 
-    @Column(name = "subject_id", nullable = false)
-    private Long subjectId;
+	@Column(name = "subject_id", nullable = false)
+	private Long subjectId;
 
-    @Column(name = "scheme_id")
-    private Long schemeId;
+	@Column(name = "scheme_id")
+	private Long schemeId;
 
-    @Column(name = "session_id", nullable = false)
-    private Long sessionId;
+	@Column(name = "session_id", nullable = false)
+	private Long sessionId;
 
-    @Column(nullable = false, length = 16)
-    private String status; // PENDING / SUBMITTED
+	@Column(nullable = false, length = 16)
+	private String status; // PENDING / SUBMITTED
 
-    @Column(name = "filled_at")
-    private LocalDateTime filledAt; // ✅ 提交时写
+	@Column(name = "filled_at", nullable = true)
+	private LocalDateTime filledAt; // 提交时写入
 
-    @Column(precision = 10, scale = 2)
-    private BigDecimal score;
+	@Column(precision = 10, scale = 2)
+	private BigDecimal score;
 
-    @Column(name = "raw_json", columnDefinition = "json")
-    private String rawJson; // PENDING: null
-    
+	@Column(name = "raw_json", columnDefinition = "json")
+	private String rawJson; // PENDING: null
+
 	public Long getId() {
 		return id;
 	}
@@ -97,7 +93,6 @@ public class SurveyResult {
 		this.status = status;
 	}
 
-
 	public BigDecimal getScore() {
 		return score;
 	}
@@ -114,5 +109,39 @@ public class SurveyResult {
 		this.rawJson = rawJson;
 	}
 
-    
+	@Column(name = "created_at", nullable = false, updatable = false)
+	private LocalDateTime createdAt;
+
+	@Column(name = "updated_at", nullable = false)
+	private LocalDateTime updatedAt;
+
+	@PrePersist
+	public void prePersist() {
+		LocalDateTime now = LocalDateTime.now();
+		if (createdAt == null)
+			createdAt = now;
+		if (updatedAt == null)
+			updatedAt = now;
+	}
+
+	@PreUpdate
+	public void preUpdate() {
+		updatedAt = LocalDateTime.now();
+	}
+
+	public LocalDateTime getCreatedAt() {
+		return createdAt;
+	}
+
+	public void setCreatedAt(LocalDateTime createdAt) {
+		this.createdAt = createdAt;
+	}
+
+	public LocalDateTime getUpdatedAt() {
+		return updatedAt;
+	}
+
+	public void setUpdatedAt(LocalDateTime updatedAt) {
+		this.updatedAt = updatedAt;
+	}
 }

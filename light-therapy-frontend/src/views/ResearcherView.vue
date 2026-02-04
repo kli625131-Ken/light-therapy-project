@@ -637,36 +637,42 @@ watch(() => viewLogDetail.value, async (newLog) => {
     try {
       const res = await getSurveyResultBySession(newLog.id)
       if (res) {
-        let mergedAnswers = {}
         // Handle array response (multiple surveys)
         if (Array.isArray(res)) {
-            res.forEach(item => {
-                if (item && item.rawJson) {
-                    try {
-                        const answers = typeof item.rawJson === 'string' ? JSON.parse(item.rawJson) : item.rawJson
-                        mergedAnswers = { ...mergedAnswers, ...answers }
-                    } catch (parseErr) {
-                        console.error('Error parsing survey answers JSON:', parseErr)
-                    }
+            currentLogSurveyResult.value = res.map(item => {
+                let parsedAnswers = {}
+                try {
+                    parsedAnswers = typeof item.rawJson === 'string' ? JSON.parse(item.rawJson) : item.rawJson
+                } catch (parseErr) {
+                    console.error('Error parsing survey answers JSON:', parseErr)
+                }
+                return {
+                    ...item,
+                    answers: parsedAnswers
                 }
             })
         } 
         // Handle single object response (backward compatibility)
         else if (res.rawJson) {
+            let parsedAnswers = {}
             try {
-                const answers = typeof res.rawJson === 'string' ? JSON.parse(res.rawJson) : res.rawJson
-                mergedAnswers = answers
+                parsedAnswers = typeof res.rawJson === 'string' ? JSON.parse(res.rawJson) : res.rawJson
             } catch (parseErr) {
                 console.error('Error parsing survey answers JSON:', parseErr)
             }
+            currentLogSurveyResult.value = [{
+                ...res,
+                answers: parsedAnswers
+            }]
+        } else {
+            currentLogSurveyResult.value = []
         }
-        currentLogSurveyResult.value = Object.keys(mergedAnswers).length > 0 ? mergedAnswers : null
       }
     } catch (e) {
       console.error('Failed to fetch survey details for log:', newLog.id, e)
     }
   } else {
-    currentLogSurveyResult.value = null
+    currentLogSurveyResult.value = []
     viewingUser.value = null
   }
 })
@@ -2626,12 +2632,17 @@ const closeSchemeModal = () => {
                 <p class="font-bold text-gray-700 mb-2 flex items-center gap-2">
                   <MessageSquare :size="14" /> 问卷反馈
                 </p>
-                <ul v-if="currentLogSurveyResult" class="space-y-1">
-                  <li v-for="(val, key) in currentLogSurveyResult" :key="key" class="flex justify-between">
-                    <span class="text-gray-500">{{ getQuestionLabel(key) || key }}:</span>
-                    <span class="font-medium text-gray-800">{{ val }}</span>
-                  </li>
-                </ul>
+                <template v-if="currentLogSurveyResult && currentLogSurveyResult.length > 0">
+                  <div v-for="(survey, idx) in currentLogSurveyResult" :key="idx" class="mb-3 last:mb-0 border-b last:border-0 pb-2 last:pb-0">
+                    <p class="font-bold text-gray-600 text-xs mb-1" v-if="survey.templateName">{{ survey.templateName }}</p>
+                    <ul class="space-y-1">
+                      <li v-for="(val, key) in survey.answers" :key="key" class="flex justify-between">
+                        <span class="text-gray-500">{{ getQuestionLabel(key) || key }}:</span>
+                        <span class="font-medium text-gray-800">{{ val }}</span>
+                      </li>
+                    </ul>
+                  </div>
+                </template>
                 <p v-else class="text-gray-400 italic">未填写问卷</p>
               </div>
             </div>

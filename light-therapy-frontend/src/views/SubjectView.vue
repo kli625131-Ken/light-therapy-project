@@ -519,36 +519,42 @@ watch(() => viewDetailsLog.value, async (newLog) => {
     try {
       const res = await getSurveyResultBySession(newLog.id)
       if (res) {
-        let mergedAnswers = {}
         // Handle array response (multiple surveys)
         if (Array.isArray(res)) {
-            res.forEach(item => {
-                if (item && item.rawJson) {
-                    try {
-                        const answers = typeof item.rawJson === 'string' ? JSON.parse(item.rawJson) : item.rawJson
-                        mergedAnswers = { ...mergedAnswers, ...answers }
-                    } catch (parseErr) {
-                        console.error('Error parsing survey answers JSON:', parseErr)
-                    }
+            currentLogSurveyResult.value = res.map(item => {
+                let parsedAnswers = {}
+                try {
+                    parsedAnswers = typeof item.rawJson === 'string' ? JSON.parse(item.rawJson) : item.rawJson
+                } catch (parseErr) {
+                    console.error('Error parsing survey answers JSON:', parseErr)
+                }
+                return {
+                    ...item,
+                    answers: parsedAnswers
                 }
             })
         } 
         // Handle single object response (backward compatibility)
         else if (res.rawJson) {
+            let parsedAnswers = {}
             try {
-                const answers = typeof res.rawJson === 'string' ? JSON.parse(res.rawJson) : res.rawJson
-                mergedAnswers = answers
+                parsedAnswers = typeof res.rawJson === 'string' ? JSON.parse(res.rawJson) : res.rawJson
             } catch (parseErr) {
                 console.error('Error parsing survey answers JSON:', parseErr)
             }
+            currentLogSurveyResult.value = [{
+                ...res,
+                answers: parsedAnswers
+            }]
+        } else {
+            currentLogSurveyResult.value = []
         }
-        currentLogSurveyResult.value = Object.keys(mergedAnswers).length > 0 ? mergedAnswers : null
       }
     } catch (e) {
       console.error('Failed to fetch survey details for log:', newLog.id, e)
     }
   } else {
-    currentLogSurveyResult.value = null
+    currentLogSurveyResult.value = []
   }
 })
 const scales = computed(() => dataStore?.scales || []) // ken260122-修改内容：添加可选链操作符，确保dataStore为undefined时不崩溃
@@ -1108,6 +1114,9 @@ const handleStop = async (completed = false) => {
       await fetchLogs()
       
       console.log('✅ 治疗会话结束成功')
+      
+      // 只有成功结束才显示模态框
+      showScaleModal.value = true
     } catch (error) {
       console.error('❌ 结束治疗会话失败:', error)
       alert(`结束治疗会话失败: ${error.message}`)
@@ -1124,9 +1133,6 @@ const handleStop = async (completed = false) => {
   selectedSurveyTemplate.value = null
   surveyProgress.value = 0
   submissionStatus.value = {}
-  
-  // 无论API调用是否成功，都显示模态框
-  showScaleModal.value = true // ken260122-修改内容：确保在所有情况下都能显示反馈模态框
 }
 
 const selectSurveyTemplate = async (template) => {
@@ -1193,12 +1199,46 @@ const handleSubmitScale = async () => {
     // 重置提交状态
     submissionStatus.value = {}
     
+    // 先获取当前会话的所有问卷结果记录，以便找到对应的 Result ID
+    let sessionResults = []
+    try {
+      const res = await getSurveyResultBySession(lastLogId.value)
+      if (Array.isArray(res)) {
+        sessionResults = res
+      } else if (res && res.id) {
+        sessionResults = [res]
+      }
+    } catch (e) {
+      console.error('获取会话问卷记录失败:', e)
+      // Fallback: if fetch fails, we can't submit to specific IDs easily.
+      // But we should try to continue or abort.
+      // For now, let's alert user.
+      alert('无法获取问卷记录ID，提交失败')
+      return
+    }
+
     // 逐一提交每个量表的答案
     const submissionPromises = Object.entries(answersByTemplate).map(([templateId, answers]) => {
-      return submitSurvey(lastLogId.value, {
+      // Find the survey result record for this template
+      const targetResult = sessionResults.find(r => String(r.templateId) === String(templateId))
+      
+      console.log(`[Submit Debug] TemplateId: ${templateId}`)
+      
+      if (!targetResult) {
+        console.error(`❌ 未找到模板 ${templateId} 对应的问卷记录 (surveyResultId not found)`)
+        console.log('Available Session Results:', sessionResults)
+        return Promise.resolve() 
+      }
+
+      console.log(`[Submit Debug] SurveyResultId: ${targetResult.id}`)
+      const payload = {
         rawJson: JSON.stringify(answers),
         score: 0
-      }).then(() => {
+      }
+      console.log(`[Submit Debug] URL: /api/surveys/${targetResult.id}/submit`)
+      console.log(`[Submit Debug] Payload:`, payload)
+
+      return submitSurvey(targetResult.id, payload).then(() => {
         submissionStatus.value[templateId] = 'success'
         console.log(`✅ 量表 ${templateId} 提交成功`)
       }).catch(error => {
@@ -2316,12 +2356,17 @@ onUnmounted(() => {
                 <p class="font-bold text-gray-700 mb-2 flex items-center gap-2">
                   <MessageSquare :size="14" /> 问卷反馈
                 </p>
-                <ul v-if="currentLogSurveyResult" class="space-y-1">
-                  <li v-for="(val, key) in currentLogSurveyResult" :key="key" class="flex justify-between">
-                    <span class="text-gray-500">{{ getQuestionLabel(key) || key }}:</span>
-                    <span class="font-medium text-gray-800">{{ val }}</span>
-                  </li>
-                </ul>
+                <template v-if="currentLogSurveyResult && currentLogSurveyResult.length > 0">
+                  <div v-for="(survey, idx) in currentLogSurveyResult" :key="idx" class="mb-3 last:mb-0 border-b last:border-0 pb-2 last:pb-0">
+                    <p class="font-bold text-gray-600 text-xs mb-1" v-if="survey.templateName">{{ survey.templateName }}</p>
+                    <ul class="space-y-1">
+                      <li v-for="(val, key) in survey.answers" :key="key" class="flex justify-between">
+                         <span class="text-gray-500">{{ getQuestionLabel(key) || key }}:</span>
+                         <span class="font-medium text-gray-800">{{ val }}</span>
+                      </li>
+                    </ul>
+                  </div>
+                </template>
                 <p v-else class="text-gray-400 italic">未填写问卷</p>
               </div>
            </div>

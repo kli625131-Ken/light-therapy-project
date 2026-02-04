@@ -19,4 +19,10 @@ public interface ExperimentGroupRepository extends JpaRepository<ExperimentGroup
      */
     @Query("SELECT g FROM ExperimentGroup g LEFT JOIN FETCH g.surveyTemplates WHERE g.id IN :ids")
     List<ExperimentGroup> findAllWithSurveyTemplates(Set<Long> ids);
+
+    /**
+     * 根据ID查询单个实验组，并立即加载关联的量表模板
+     */
+    @Query("SELECT g FROM ExperimentGroup g LEFT JOIN FETCH g.surveyTemplates WHERE g.id = :id")
+    java.util.Optional<ExperimentGroup> findByIdWithSurveyTemplates(Long id);
 }

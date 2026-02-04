@@ -213,7 +213,93 @@ public class SurveyService {
         dto.score = result.getScore();
         dto.rawJson = result.getRawJson();
         dto.filledAt = result.getFilledAt();
+
+        templateRepo.findById(result.getTemplateId())
+                .ifPresent(t -> dto.templateName = t.getName());
+
         return dto;
     }
 
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(SurveyService.class);
+
+    @Transactional(propagation = org.springframework.transaction.annotation.Propagation.REQUIRED)
+    public void createMissingSurveyResults(com.lontri.lighttherapy.entity.ExperimentGroup group,
+            com.lontri.lighttherapy.entity.TreatmentSession s) {
+        if (group == null) {
+            log.warn("[Survey Creation] Group is null, skipping survey result creation");
+            return;
+        }
+
+        log.info("[Survey Creation] Starting isolated survey creation for session {}, group {}", s.getId(), group.getId());
+
+        java.util.List<com.lontri.lighttherapy.entity.SurveyTemplate> templates = group.getSurveyTemplates();
+        log.info("[Survey Creation] Templates from group: {}", templates != null ? templates.size() : "null");
+        if (templates != null && !templates.isEmpty()) {
+            // 1. Deduplicate required Template IDs from Group
+            java.util.Set<Long> requiredTemplateIds = new java.util.HashSet<>();
+            for (com.lontri.lighttherapy.entity.SurveyTemplate tmpl : templates) {
+                if (tmpl != null && tmpl.getId() != null) {
+                    requiredTemplateIds.add(tmpl.getId());
+                    log.info("[Survey Creation] Found template: id={}, name={}", tmpl.getId(), tmpl.getName());
+                }
+            }
+            log.info("[Survey Creation] Required template IDs: {}", requiredTemplateIds);
+
+            // 2. Fetch already existing SurveyResults for this session to avoid
+            // ConstraintViolation
+            java.util.List<SurveyResult> existingResults = surveyResultRepo.findBySessionId(s.getId());
+            java.util.Set<Long> existingTemplateIds = new java.util.HashSet<>();
+            if (existingResults != null) {
+                for (SurveyResult r : existingResults) {
+                    existingTemplateIds.add(r.getTemplateId());
+                }
+            }
+            log.info("[Survey Creation] Existing results count: {}, template IDs: {}",
+                existingResults != null ? existingResults.size() : 0, existingTemplateIds);
+
+            // 3. Identify and create missing results
+            java.util.List<SurveyResult> newResults = new java.util.ArrayList<>();
+            for (Long tId : requiredTemplateIds) {
+                if (!existingTemplateIds.contains(tId)) {
+                    SurveyResult surveyResult = new SurveyResult();
+                    surveyResult.setSubjectId(s.getSubjectId());
+                    surveyResult.setSessionId(s.getId());
+                    surveyResult.setTemplateId(tId);
+                    surveyResult.setStatus("PENDING");
+                    newResults.add(surveyResult);
+                    log.info("[Survey Creation] Prepared new survey result: sessionId={}, templateId={}, status=PENDING",
+                        s.getId(), tId);
+                }
+            }
+
+            // 4. Batch save
+            if (!newResults.isEmpty()) {
+                log.info("[Survey Creation] Creating {} new survey results for session {}", newResults.size(), s.getId());
+                try {
+                    surveyResultRepo.saveAll(newResults);
+                    log.info("[Survey Creation] Successfully saved {} survey results", newResults.size());
+                } catch (Exception saveEx) {
+                    log.error("[Survey Creation] FAILED to save survey results for session {}. Exception: {}",
+                        s.getId(), saveEx.getMessage(), saveEx);
+                    throw saveEx; // Re-throw to trigger transaction rollback
+                }
+            } else {
+                log.info("[Survey Creation] No new survey results needed for session {}", s.getId());
+            }
+        } else {
+            log.warn("[Survey Creation] No templates found for group {}", group.getId());
+        }
+    }
+
+    @Transactional(propagation = org.springframework.transaction.annotation.Propagation.REQUIRES_NEW)
+    public void createDefaultSurveyResult(com.lontri.lighttherapy.entity.TreatmentSession s, Long defaultTemplateId) {
+        if (!surveyResultRepo.existsBySessionIdAndTemplateId(s.getId(), defaultTemplateId)) {
+            SurveyResult surveyResult = new SurveyResult();
+            surveyResult.setSubjectId(s.getSubjectId());
+            surveyResult.setSessionId(s.getId());
+            surveyResult.setTemplateId(defaultTemplateId);
+            surveyResult.setStatus("PENDING");
+            surveyResultRepo.save(surveyResult);
+        }
+    }
 }
